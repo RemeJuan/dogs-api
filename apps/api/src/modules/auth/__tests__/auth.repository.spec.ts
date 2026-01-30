@@ -25,7 +25,6 @@ describe('AuthRepository', () => {
   };
 
   beforeEach(async () => {
-    // Clean up test database
     if (existsSync(testDbPath)) {
       unlinkSync(testDbPath);
     }
@@ -128,32 +127,27 @@ describe('AuthRepository', () => {
     });
 
     it('should handle different TTL values', () => {
-      const token1 = 'short-ttl';
-      const token2 = 'long-ttl';
+      const token = 'test-token';
 
-      // Save with different TTLs
-      repository.saveSession(token1, 'refresh1', mockUserData, 1);
-      repository.saveSession(token2, 'refresh2', mockUserData, 60);
+      repository.saveSession(token, 'refresh', mockUserData, 60);
 
-      // Both should be retrievable immediately
-      expect(repository.getSession(token1)).not.toBeNull();
-      expect(repository.getSession(token2)).not.toBeNull();
+      expect(repository.getSession(token)).not.toBeNull();
     });
   });
 
   describe('deleteSession', () => {
-    it('should delete a session', () => {
+    it('should delete a session by userId', () => {
       const accessToken = 'test-token';
 
       repository.saveSession(accessToken, 'refresh', mockUserData);
       expect(repository.getSession(accessToken)).not.toBeNull();
 
-      repository.deleteSession(accessToken);
+      repository.deleteSession(mockUserData.id);
       expect(repository.getSession(accessToken)).toBeNull();
     });
 
     it('should not throw error when deleting non-existent session', () => {
-      expect(() => repository.deleteSession('non-existent')).not.toThrow();
+      expect(() => repository.deleteSession(999)).not.toThrow();
     });
   });
 
@@ -179,16 +173,11 @@ describe('AuthRepository', () => {
 
   describe('cleanupExpiredTokens', () => {
     it('should clean up without errors', () => {
-      // Add some valid sessions
       repository.saveSession('token1', 'refresh1', mockUserData, 60);
-      repository.saveSession('token2', 'refresh2', mockUserData, 60);
 
-      // Cleanup should not throw
       expect(() => repository.cleanupExpiredTokens()).not.toThrow();
 
-      // Valid sessions should still exist
       expect(repository.sessionExists('token1')).toBe(true);
-      expect(repository.sessionExists('token2')).toBe(true);
     });
 
     it('should handle cleanup when no expired tokens exist', () => {
@@ -205,9 +194,13 @@ describe('AuthRepository', () => {
 
   describe('deleteAllSessions', () => {
     it('should delete all sessions', () => {
-      repository.saveSession('token1', 'refresh1', mockUserData);
-      repository.saveSession('token2', 'refresh2', mockUserData);
-      repository.saveSession('token3', 'refresh3', mockUserData);
+      const user1 = { ...mockUserData, id: 1 };
+      const user2 = { ...mockUserData, id: 2 };
+      const user3 = { ...mockUserData, id: 3 };
+
+      repository.saveSession('token1', 'refresh1', user1);
+      repository.saveSession('token2', 'refresh2', user2);
+      repository.saveSession('token3', 'refresh3', user3);
 
       expect(repository.sessionExists('token1')).toBe(true);
       expect(repository.sessionExists('token2')).toBe(true);

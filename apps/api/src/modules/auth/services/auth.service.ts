@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthRepository } from './auth.repository';
 import { DummyJsonAuthService } from '@api/modules/http-dummy-json/services/dummy-json-auth.service';
 import { User } from '@dogs-api/shared-interfaces';
@@ -46,25 +46,39 @@ export class AuthService {
   async getCurrentUser(accessToken: string): Promise<UserDto> {
     const session = this.repository.getSession(accessToken);
 
-    if (session) {
-      return session;
+    if (!session) {
+      throw new UnauthorizedException(
+        'Session not found or expired. Please log in again.',
+      );
     }
 
-    const user = await this.dummyJsonAuthService.getCurrentUser(accessToken);
-
-    this.repository.saveSession(
-      accessToken,
-      '',
-      user,
-      this.DEFAULT_TTL_MINUTES,
-    );
-
-    return user;
+    return session;
   }
 
   async refreshToken(
     request: RefreshTokenDto,
   ): Promise<RefreshTokenResponseDto> {
-    return await this.dummyJsonAuthService.refreshToken(request);
+    const oldSession = request.refreshToken
+      ? this.repository.getSessionByRefreshToken(request.refreshToken)
+      : null;
+
+    if (!oldSession) {
+      throw new UnauthorizedException(
+        'Invalid or expired refresh token. Please log in again.',
+      );
+    }
+
+    const refreshResponse =
+      await this.dummyJsonAuthService.refreshToken(request);
+
+    const ttl = request.expiresInMins || this.DEFAULT_TTL_MINUTES;
+    this.repository.updateSessionTokens(
+      oldSession.userId,
+      refreshResponse.accessToken,
+      refreshResponse.refreshToken,
+      ttl,
+    );
+
+    return refreshResponse;
   }
 }

@@ -3,9 +3,9 @@ import { DatabaseService } from '@api/modules/database/services/database.service
 import { User } from '@dogs-api/shared-interfaces';
 
 interface AuthSession {
+  userId: number;
   accessToken: string;
   refreshToken: string;
-  userId: number;
   userData: string; // JSON string
   expiresAt: string; // ISO date string
   createdAt: string; // ISO date string
@@ -26,9 +26,9 @@ export class AuthRepository implements OnModuleInit {
   private initializeTable(): void {
     const createTableSQL = `
       CREATE TABLE IF NOT EXISTS auth_sessions (
-        accessToken TEXT PRIMARY KEY,
+        userId INTEGER PRIMARY KEY,
+        accessToken TEXT NOT NULL,
         refreshToken TEXT NOT NULL,
-        userId INTEGER NOT NULL,
         userData TEXT NOT NULL,
         expiresAt TEXT NOT NULL,
         createdAt TEXT NOT NULL
@@ -37,7 +37,11 @@ export class AuthRepository implements OnModuleInit {
 
     this.databaseService.exec(createTableSQL);
 
-    // Create index for faster cleanup queries
+    this.databaseService.exec(`
+      CREATE INDEX IF NOT EXISTS idx_auth_sessions_accessToken 
+      ON auth_sessions(accessToken)
+    `);
+
     this.databaseService.exec(`
       CREATE INDEX IF NOT EXISTS idx_auth_sessions_expiresAt 
       ON auth_sessions(expiresAt)
@@ -57,14 +61,14 @@ export class AuthRepository implements OnModuleInit {
 
     const stmt = this.databaseService.prepare(`
       INSERT OR REPLACE INTO auth_sessions 
-      (accessToken, refreshToken, userId, userData, expiresAt, createdAt)
+      (userId, accessToken, refreshToken, userData, expiresAt, createdAt)
       VALUES (?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
+      userData.id,
       accessToken,
       refreshToken,
-      userData.id,
       JSON.stringify(userData),
       expiresAt.toISOString(),
       now.toISOString(),
@@ -86,11 +90,11 @@ export class AuthRepository implements OnModuleInit {
     return JSON.parse(session.userData) as User;
   }
 
-  deleteSession(accessToken: string): void {
+  deleteSession(userId: number): void {
     const stmt = this.databaseService.prepare(
-      'DELETE FROM auth_sessions WHERE accessToken = ?',
+      'DELETE FROM auth_sessions WHERE userId = ?',
     );
-    stmt.run(accessToken);
+    stmt.run(userId);
   }
 
   deleteAllSessions(): void {
@@ -116,5 +120,31 @@ export class AuthRepository implements OnModuleInit {
     `);
     const result = stmt.get(accessToken) as { count: number };
     return result.count > 0;
+  }
+
+  getSessionByRefreshToken(refreshToken: string): AuthSession | null {
+    const stmt = this.databaseService.prepare(`
+      SELECT * FROM auth_sessions 
+      WHERE refreshToken = ? AND expiresAt > datetime('now')
+    `);
+    return (stmt.get(refreshToken) as AuthSession | undefined) || null;
+  }
+
+  updateSessionTokens(
+    userId: number,
+    newAccessToken: string,
+    newRefreshToken: string,
+    expiresInMins: number = this.DEFAULT_TTL_MINUTES,
+  ): void {
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + expiresInMins * 60 * 1000);
+
+    const stmt = this.databaseService.prepare(`
+      UPDATE auth_sessions 
+      SET accessToken = ?, refreshToken = ?, expiresAt = ?
+      WHERE userId = ?
+    `);
+
+    stmt.run(newAccessToken, newRefreshToken, expiresAt.toISOString(), userId);
   }
 }
