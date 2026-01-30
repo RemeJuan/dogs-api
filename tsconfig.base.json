@@ -16,7 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@dogs-api/shared-interfaces": ["libs/shared-interfaces/src/index.ts"],
-      "@api/*": ["apps/api/src/*"]
+      "@api/*": ["apps/api/src/*"],
+      "@web/*": ["apps/web/src/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]
