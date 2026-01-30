@@ -1,19 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { RefreshTokenRequest, RefreshTokenResponse } from '@dogs-api/shared-interfaces';
+import {
+  RefreshTokenRequest,
+  RefreshTokenResponse,
+} from '@dogs-api/shared-interfaces';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class RefreshTokenDto implements RefreshTokenRequest {
-  @ApiProperty({ 
-    description: 'Refresh token (optional if provided via cookie)', 
-    required: false 
+  @ApiProperty({
+    description: 'Refresh token',
+    required: false,
   })
-  refreshToken?: string;
+  @IsString()
+  @IsNotEmpty()
+  refreshToken: string;
 
-  @ApiProperty({ 
-    description: 'New access token expiration time in minutes', 
+  @ApiProperty({
+    description: 'New access token expiration time in minutes',
     example: 30,
     required: false,
-    default: 60
+    default: 60,
   })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
   expiresInMins?: number;
 }
 
