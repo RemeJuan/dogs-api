@@ -12,12 +12,13 @@ import {
 import Search from '@mui/icons-material/Search';
 import { useMemo, useState } from 'react';
 import { ErrorRetry } from '@web/components/error-retry.component';
+import { useHomeContext } from '@web/pages/home/home.context';
 
 export function BreedsList() {
   const { dogs, isLoading, error, refetch } = useBreeds();
   const [query, setQuery] = useState('');
   const [isRetrying, setIsRetrying] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
+  const { selected, toggleSelected } = useHomeContext();
 
   const filtered = useMemo(() => {
     if (!dogs) return [];
@@ -25,14 +26,6 @@ export function BreedsList() {
     if (!q) return dogs;
     return dogs.filter((b) => (b.name || '').toLowerCase().includes(q));
   }, [dogs, query]);
-
-  const select = (item: string) => {
-    if (selected === item) {
-      setSelected(null);
-    } else {
-      setSelected(item);
-    }
-  };
 
   if (isLoading) {
     return <Loading />;
@@ -104,7 +97,7 @@ export function BreedsList() {
             <ListItem key={breed.name}>
               <ListItemButton
                 selected={isSelected}
-                onClick={() => select(breed.name)}
+                onClick={() => toggleSelected(breed.name)}
                 sx={{
                   position: 'relative',
                   py: 0.9,
