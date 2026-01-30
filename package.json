@@ -14,7 +14,17 @@
     "test:web": "nx test web",
     "lint": "nx run-many -t lint -p api web shared-interfaces",
     "lint:api": "nx lint api",
-    "lint:web": "nx lint web"
+    "lint:web": "nx lint web",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@babel/core": "^7.14.5",
@@ -47,9 +57,11 @@
     "@types/uuid": "^10.0.0",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
+    "husky": "^9.1.7",
     "jest": "^30.0.2",
     "jest-environment-node": "^30.0.2",
     "jest-util": "^30.0.2",
+    "lint-staged": "^16.2.7",
     "prettier": "~3.6.2",
     "react-refresh": "^0.10.0",
     "ts-jest": "^29.4.0",
