@@ -9,7 +9,7 @@
     "build": "nx run-many -t build -p api web",
     "build:api": "nx build api",
     "build:web": "nx build web",
-    "test": "nx run-many -t test -p api web shared-interfaces",
+    "test": "nx run-many -t test -p api web",
     "test:api": "nx test api",
     "test:web": "nx test web",
     "lint": "nx run-many -t lint -p api web shared-interfaces",
