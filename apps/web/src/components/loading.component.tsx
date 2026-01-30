@@ -11,7 +11,7 @@ export function Loading() {
         py: 4,
       }}
     >
-      <CircularProgress size="lg" />
+      <CircularProgress size="sm" />
       <Typography level="body-md" sx={{ mt: 2, color: 'text.secondary' }}>
         Loading...
       </Typography>
