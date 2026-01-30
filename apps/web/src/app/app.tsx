@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import { Box, Container, Typography, Sheet } from '@mui/joy';
-import { Home } from '../pages/Home';
+import { HomePage } from '@web/pages/home/home.page';
 import PetsIcon from '@mui/icons-material/Pets';
 
 export function App() {
@@ -31,7 +31,7 @@ export function App() {
 
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4, flex: 1 }}>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<HomePage />} />
         </Routes>
       </Container>
     </Box>
