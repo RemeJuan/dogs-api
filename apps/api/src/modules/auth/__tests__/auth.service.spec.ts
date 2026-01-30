@@ -124,25 +124,23 @@ describe('AuthService', () => {
   });
 
   describe('getCurrentUser', () => {
-    const accessToken = 'test-access-token';
+    const userId = 1;
 
     it('should return session from repository if available', async () => {
       mockRepository.getSession.mockReturnValue(mockUserData);
 
-      const result = await service.getCurrentUser(accessToken);
+      const result = await service.getCurrentUser(userId);
 
       expect(result).toEqual(mockUserData);
-      expect(repository.getSession).toHaveBeenCalledWith(accessToken);
-      expect(dummyJsonAuthService.getCurrentUser).not.toHaveBeenCalled();
+      expect(repository.getSession).toHaveBeenCalledWith(userId);
     });
 
     it('should throw UnauthorizedException when session not found', async () => {
       mockRepository.getSession.mockReturnValue(null);
 
-      await expect(service.getCurrentUser(accessToken)).rejects.toThrow(
+      await expect(service.getCurrentUser(userId)).rejects.toThrow(
         'Session not found or expired. Please log in again.',
       );
-      expect(dummyJsonAuthService.getCurrentUser).not.toHaveBeenCalled();
     });
   });
 
@@ -199,7 +197,7 @@ describe('AuthService', () => {
     it('should handle refresh without refresh token in request', async () => {
       mockRepository.getSessionByRefreshToken.mockReturnValue(null);
 
-      await expect(service.refreshToken({})).rejects.toThrow(
+      await expect(service.refreshToken({ refreshToken: '' })).rejects.toThrow(
         'Invalid or expired refresh token. Please log in again.',
       );
     });

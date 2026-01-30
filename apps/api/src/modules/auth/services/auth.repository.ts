@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { DatabaseService } from '@api/modules/database/services/database.service';
 import { User } from '@dogs-api/shared-interfaces';
 
@@ -26,7 +26,7 @@ export class AuthRepository implements OnModuleInit {
   private initializeTable(): void {
     const createTableSQL = `
       CREATE TABLE IF NOT EXISTS auth_sessions (
-        userId INTEGER PRIMARY KEY,
+        userId INTEGER PRIMARY KEY UNIQUE,
         accessToken TEXT NOT NULL,
         refreshToken TEXT NOT NULL,
         userData TEXT NOT NULL,
@@ -38,12 +38,7 @@ export class AuthRepository implements OnModuleInit {
     this.databaseService.exec(createTableSQL);
 
     this.databaseService.exec(`
-      CREATE INDEX IF NOT EXISTS idx_auth_sessions_accessToken 
-      ON auth_sessions(accessToken)
-    `);
-
-    this.databaseService.exec(`
-      CREATE INDEX IF NOT EXISTS idx_auth_sessions_expiresAt 
+      CREATE INDEX IF NOT EXISTS idx_auth_sessions_expiresAt
       ON auth_sessions(expiresAt)
     `);
 
@@ -75,13 +70,13 @@ export class AuthRepository implements OnModuleInit {
     );
   }
 
-  getSession(accessToken: string): User | null {
+  getSession(userId: number): User | null {
     const stmt = this.databaseService.prepare(`
-      SELECT * FROM auth_sessions 
-      WHERE accessToken = ? AND expiresAt > datetime('now')
+      SELECT * FROM auth_sessions
+      WHERE userId = ? AND expiresAt > datetime('now')
     `);
 
-    const session = stmt.get(accessToken) as AuthSession | undefined;
+    const session = stmt.get(userId) as AuthSession | undefined;
 
     if (!session) {
       return null;
@@ -111,15 +106,6 @@ export class AuthRepository implements OnModuleInit {
     if (result.changes > 0) {
       this.logger.log(`Cleaned up ${result.changes} expired token(s)`);
     }
-  }
-
-  sessionExists(accessToken: string): boolean {
-    const stmt = this.databaseService.prepare(`
-      SELECT COUNT(*) as count FROM auth_sessions 
-      WHERE accessToken = ? AND expiresAt > datetime('now')
-    `);
-    const result = stmt.get(accessToken) as { count: number };
-    return result.count > 0;
   }
 
   getSessionByRefreshToken(refreshToken: string): AuthSession | null {

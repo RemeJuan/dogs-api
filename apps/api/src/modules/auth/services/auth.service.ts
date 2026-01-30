@@ -1,13 +1,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { AuthRepository } from './auth.repository';
 import { DummyJsonAuthService } from '@api/modules/http-dummy-json/services/dummy-json-auth.service';
 import { User } from '@dogs-api/shared-interfaces';
 import { LoginDto, LoginResponseDto } from '@api/modules/auth/dtos/login.dto';
-import { UserDto } from '@api/modules/auth/dtos/user.dto';
 import {
   RefreshTokenDto,
   RefreshTokenResponseDto,
 } from '@api/modules/auth/dtos/refresh-token.dto';
+import { UserDto } from '@api/modules/auth/dtos/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -40,11 +41,11 @@ export class AuthService {
       ttl,
     );
 
-    return loginResponse;
+    return plainToInstance(LoginResponseDto, loginResponse);
   }
 
-  async getCurrentUser(accessToken: string): Promise<UserDto> {
-    const session = this.repository.getSession(accessToken);
+  async getCurrentUser(userId: number): Promise<UserDto> {
+    const session = this.repository.getSession(userId);
 
     if (!session) {
       throw new UnauthorizedException(
@@ -52,7 +53,7 @@ export class AuthService {
       );
     }
 
-    return session;
+    return plainToInstance(UserDto, session);
   }
 
   async refreshToken(
