@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from '@api/modules/auth/controllers/auth.controller';
 import { AuthService } from '@api/modules/auth/services/auth.service';
-import { CacheModule } from '@api/modules/cache/cache.module';
+import { AuthRepository } from '@api/modules/auth/services/auth.repository';
 import { HttpDummyJsonModule } from '@api/modules/http-dummy-json/http-dummy-json.module';
 
 @Module({
-  imports: [CacheModule, HttpDummyJsonModule],
+  imports: [HttpDummyJsonModule],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, AuthRepository],
 })
 export class AuthModule {}

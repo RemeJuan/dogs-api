@@ -8,11 +8,12 @@ interface CacheEntry<T> {
 
 @Injectable()
 export class CacheService {
-  private cache = new Map<string, CacheEntry<any>>();
+  private cache = new Map<string, CacheEntry<unknown>>();
   private readonly cacheEnabled: boolean;
 
   constructor(private readonly configService: ConfigService) {
-    this.cacheEnabled = this.configService.get<string>('CACHE_ENABLED', 'true') === 'true';
+    this.cacheEnabled =
+      this.configService.get<string>('CACHE_ENABLED', 'true') === 'true';
   }
 
   set<T>(key: string, value: T, ttlSeconds: number): void {

@@ -1,26 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { FavouritesRepository } from './favourites.repository';
-import {
-  Favourite,
-  FavouritesResponse,
-  AddFavouriteRequest,
-  AddFavouriteResponse
-} from '@dogs-api/shared-interfaces';
+import { Favourite } from '@dogs-api/shared-interfaces';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  AddFavouriteDto,
+  AddFavouriteResponseDto,
+  FavouritesListDto,
+} from '@api/modules/favourites/dtos/favourite.dto';
 
 @Injectable()
 export class FavouritesService {
   constructor(private readonly repository: FavouritesRepository) {}
 
-  getAllFavourites(): FavouritesResponse {
+  getAllFavourites(): FavouritesListDto {
     const favourites = this.repository.findAll();
     return { favourites };
   }
 
-  addFavourite(request: AddFavouriteRequest): AddFavouriteResponse {
+  addFavourite(request: AddFavouriteDto): AddFavouriteResponseDto {
     const favourite: Favourite = {
       id: uuidv4(),
       breed: request.breed,
+
       imageUrl: request.imageUrl,
       createdAt: new Date(),
     };

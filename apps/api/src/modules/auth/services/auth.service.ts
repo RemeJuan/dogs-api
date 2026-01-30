@@ -1,34 +1,26 @@
-import {Injectable} from '@nestjs/common';
-import {ConfigService} from '@nestjs/config';
-import {CacheService} from '@api/modules/cache/services/cache.service';
-import {DummyJsonAuthService} from '@api/modules/http-dummy-json/services/dummy-json-auth.service';
+import { Injectable } from '@nestjs/common';
+import { AuthRepository } from './auth.repository';
+import { DummyJsonAuthService } from '@api/modules/http-dummy-json/services/dummy-json-auth.service';
+import { User } from '@dogs-api/shared-interfaces';
+import { LoginDto, LoginResponseDto } from '@api/modules/auth/dtos/login.dto';
+import { UserDto } from '@api/modules/auth/dtos/user.dto';
 import {
-  LoginRequest,
-  LoginResponse,
-  RefreshTokenRequest,
-  RefreshTokenResponse,
-  User,
-} from '@dogs-api/shared-interfaces';
+  RefreshTokenDto,
+  RefreshTokenResponseDto,
+} from '@api/modules/auth/dtos/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
-  private readonly CACHE_TTL: number;
+  private readonly DEFAULT_TTL_MINUTES = 59;
 
   constructor(
-    private readonly cacheService: CacheService,
+    private readonly repository: AuthRepository,
     private readonly dummyJsonAuthService: DummyJsonAuthService,
-    private readonly configService: ConfigService
-  ) {
-    this.CACHE_TTL = parseInt(
-      this.configService.get<string>('CACHE_TTL_AUTH_SESSION', '1800'),
-      10
-    );
-  }
+  ) {}
 
-  async login(credentials: LoginRequest): Promise<LoginResponse> {
+  async login(credentials: LoginDto): Promise<LoginResponseDto> {
     const loginResponse = await this.dummyJsonAuthService.login(credentials);
 
-    const cacheKey = `auth:session:${loginResponse.accessToken}`;
     const userData: User = {
       id: loginResponse.id,
       username: loginResponse.username,
@@ -39,27 +31,40 @@ export class AuthService {
       image: loginResponse.image,
     };
 
-    this.cacheService.set(cacheKey, userData, this.CACHE_TTL);
+    // Store session in database with 59 minute TTL (dummy uses 60 by default), but we are proxying so dropping 1min for buffer)
+    const ttl = credentials.expiresInMins || this.DEFAULT_TTL_MINUTES;
+    this.repository.saveSession(
+      loginResponse.accessToken,
+      loginResponse.refreshToken,
+      userData,
+      ttl,
+    );
 
     return loginResponse;
   }
 
-  async getCurrentUser(accessToken: string): Promise<User> {
-    const cacheKey = `auth:session:${accessToken}`;
+  async getCurrentUser(accessToken: string): Promise<UserDto> {
+    const session = this.repository.getSession(accessToken);
 
-    const cached = this.cacheService.get<User>(cacheKey);
-    if (cached) {
-      return cached;
+    if (session) {
+      return session;
     }
 
     const user = await this.dummyJsonAuthService.getCurrentUser(accessToken);
 
-    this.cacheService.set(cacheKey, user, this.CACHE_TTL);
+    this.repository.saveSession(
+      accessToken,
+      '',
+      user,
+      this.DEFAULT_TTL_MINUTES,
+    );
 
     return user;
   }
 
-  async refreshToken(request: RefreshTokenRequest): Promise<RefreshTokenResponse> {
+  async refreshToken(
+    request: RefreshTokenDto,
+  ): Promise<RefreshTokenResponseDto> {
     return await this.dummyJsonAuthService.refreshToken(request);
   }
 }

@@ -90,17 +90,19 @@ describe('DogCeoApiService', () => {
       const error = new Error('Network error');
       mockHttpService.get.mockReturnValue(throwError(() => error));
 
-      await expect(service.getAllBreeds()).rejects.toThrow('Network error');
+      await expect(service.getAllBreeds()).rejects.toThrow('Failed to fetch breeds from external API');
     });
 
     it('should use configured API URL', async () => {
-      mockConfigService.get.mockReturnValue('https://custom-api.com/api');
+      const customConfigService = {
+        get: jest.fn().mockReturnValue('https://custom-api.com/api'),
+      };
       
       const module: TestingModule = await Test.createTestingModule({
         providers: [
           DogCeoApiService,
           { provide: HttpService, useValue: mockHttpService },
-          { provide: ConfigService, useValue: mockConfigService },
+          { provide: ConfigService, useValue: customConfigService },
         ],
       }).compile();
 
@@ -121,7 +123,7 @@ describe('DogCeoApiService', () => {
 
       await customService.getAllBreeds();
 
-      expect(httpService.get).toHaveBeenCalledWith('https://custom-api.com/api/breeds/list/all');
+      expect(mockHttpService.get).toHaveBeenCalledWith('https://custom-api.com/api/breeds/list/all');
     });
   });
 
@@ -206,7 +208,7 @@ describe('DogCeoApiService', () => {
       const error = new Error('API error');
       mockHttpService.get.mockReturnValue(throwError(() => error));
 
-      await expect(service.getBreedImages('invalid', 3)).rejects.toThrow('API error');
+      await expect(service.getBreedImages('invalid', 3)).rejects.toThrow('Failed to fetch breed images from external API');
     });
 
     it('should handle different breed names correctly', async () => {
