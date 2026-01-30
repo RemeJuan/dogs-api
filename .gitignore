@@ -11,6 +11,12 @@ dist
 build
 *.log
 
+# Database
+*.db
+*.db-shm
+*.db-wal
+data/
+
 # IDE
 .idea
 .vscode
