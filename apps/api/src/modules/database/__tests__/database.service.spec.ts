@@ -31,7 +31,7 @@ describe('DatabaseService', () => {
 
   afterEach(() => {
     service.onModuleDestroy();
-    
+
     // Clean up test database
     if (existsSync(testDbPath)) {
       unlinkSync(testDbPath);
@@ -63,9 +63,11 @@ describe('DatabaseService', () => {
       `;
 
       expect(() => service.exec(sql)).not.toThrow();
-      
+
       // Verify table was created
-      const stmt = service.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='test_table'");
+      const stmt = service.prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='test_table'",
+      );
       const result = stmt.get();
       expect(result).toBeDefined();
     });
@@ -93,7 +95,7 @@ describe('DatabaseService', () => {
     it('should prepare and execute INSERT statement', () => {
       const stmt = service.prepare('INSERT INTO test_data (value) VALUES (?)');
       const result = stmt.run('test-value');
-      
+
       expect(result.changes).toBe(1);
       expect(result.lastInsertRowid).toBeDefined();
     });
@@ -102,45 +104,59 @@ describe('DatabaseService', () => {
       // Insert test data
       service.prepare('INSERT INTO test_data (value) VALUES (?)').run('test-1');
       service.prepare('INSERT INTO test_data (value) VALUES (?)').run('test-2');
-      
+
       // Query data
       const stmt = service.prepare('SELECT * FROM test_data WHERE value = ?');
       const result = stmt.get('test-1');
-      
+
       expect(result).toBeDefined();
       expect(result).toHaveProperty('value', 'test-1');
     });
 
     it('should prepare and execute SELECT all', () => {
       // Insert multiple rows
-      service.prepare('INSERT INTO test_data (value) VALUES (?)').run('value-1');
-      service.prepare('INSERT INTO test_data (value) VALUES (?)').run('value-2');
-      service.prepare('INSERT INTO test_data (value) VALUES (?)').run('value-3');
-      
+      service
+        .prepare('INSERT INTO test_data (value) VALUES (?)')
+        .run('value-1');
+      service
+        .prepare('INSERT INTO test_data (value) VALUES (?)')
+        .run('value-2');
+      service
+        .prepare('INSERT INTO test_data (value) VALUES (?)')
+        .run('value-3');
+
       const stmt = service.prepare('SELECT * FROM test_data');
       const results = stmt.all();
-      
+
       expect(results).toHaveLength(3);
     });
 
     it('should prepare and execute UPDATE statement', () => {
       // Insert and update
-      const insert = service.prepare('INSERT INTO test_data (value) VALUES (?)');
+      const insert = service.prepare(
+        'INSERT INTO test_data (value) VALUES (?)',
+      );
       insert.run('original');
-      
-      const update = service.prepare('UPDATE test_data SET value = ? WHERE value = ?');
+
+      const update = service.prepare(
+        'UPDATE test_data SET value = ? WHERE value = ?',
+      );
       const result = update.run('updated', 'original');
-      
+
       expect(result.changes).toBe(1);
     });
 
     it('should prepare and execute DELETE statement', () => {
       // Insert and delete
-      service.prepare('INSERT INTO test_data (value) VALUES (?)').run('to-delete');
-      
-      const deleteStmt = service.prepare('DELETE FROM test_data WHERE value = ?');
+      service
+        .prepare('INSERT INTO test_data (value) VALUES (?)')
+        .run('to-delete');
+
+      const deleteStmt = service.prepare(
+        'DELETE FROM test_data WHERE value = ?',
+      );
       const result = deleteStmt.run('to-delete');
-      
+
       expect(result.changes).toBe(1);
     });
   });
@@ -163,7 +179,7 @@ describe('DatabaseService', () => {
       });
 
       expect(result).toBe('success');
-      
+
       const accounts = service.prepare('SELECT * FROM accounts').all();
       expect(accounts).toHaveLength(2);
     });
@@ -174,7 +190,8 @@ describe('DatabaseService', () => {
           service.prepare('INSERT INTO accounts (balance) VALUES (?)').run(100);
           throw new Error('Intentional error');
         });
-      } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_) {
         // Expected error
       }
 
@@ -184,15 +201,27 @@ describe('DatabaseService', () => {
 
     it('should handle complex transaction', () => {
       service.transaction(() => {
-        const insert = service.prepare('INSERT INTO accounts (balance) VALUES (?)');
+        const insert = service.prepare(
+          'INSERT INTO accounts (balance) VALUES (?)',
+        );
         insert.run(1000);
         insert.run(2000);
-        
-        service.prepare('UPDATE accounts SET balance = balance - 100 WHERE balance = 1000').run();
-        service.prepare('UPDATE accounts SET balance = balance + 100 WHERE balance = 2000').run();
+
+        service
+          .prepare(
+            'UPDATE accounts SET balance = balance - 100 WHERE balance = 1000',
+          )
+          .run();
+        service
+          .prepare(
+            'UPDATE accounts SET balance = balance + 100 WHERE balance = 2000',
+          )
+          .run();
       });
 
-      const accounts = service.prepare('SELECT balance FROM accounts ORDER BY balance').all() as any[];
+      const accounts = service
+        .prepare('SELECT balance FROM accounts ORDER BY balance')
+        .all() as any[];
       expect(accounts[0].balance).toBe(900);
       expect(accounts[1].balance).toBe(2100);
     });
@@ -201,7 +230,7 @@ describe('DatabaseService', () => {
   describe('lifecycle', () => {
     it('should close database connection on destroy', () => {
       service.onModuleDestroy();
-      
+
       // After destroy, operations should fail
       expect(() => service.prepare('SELECT 1')).toThrow();
     });

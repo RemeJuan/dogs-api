@@ -28,11 +28,11 @@ export class FavouritesRepository implements OnModuleInit {
 
   findAll(): Favourite[] {
     const stmt = this.databaseService.prepare(
-      'SELECT * FROM favourites ORDER BY createdAt DESC'
+      'SELECT * FROM favourites ORDER BY createdAt DESC',
     );
-    const rows = stmt.all() as any[];
-    
-    return rows.map(row => ({
+    const rows = stmt.all() as Favourite[];
+
+    return rows.map((row) => ({
       id: row.id,
       breed: row.breed,
       imageUrl: row.imageUrl,
@@ -50,14 +50,16 @@ export class FavouritesRepository implements OnModuleInit {
       favourite.id,
       favourite.breed,
       favourite.imageUrl,
-      favourite.createdAt.toISOString()
+      favourite.createdAt.toISOString(),
     );
   }
 
   delete(id: string): void {
-    const stmt = this.databaseService.prepare('DELETE FROM favourites WHERE id = ?');
+    const stmt = this.databaseService.prepare(
+      'DELETE FROM favourites WHERE id = ?',
+    );
     const result = stmt.run(id);
-    
+
     if (result.changes === 0) {
       this.logger.warn(`Attempted to delete non-existent favourite: ${id}`);
     }
@@ -65,7 +67,7 @@ export class FavouritesRepository implements OnModuleInit {
 
   exists(id: string): boolean {
     const stmt = this.databaseService.prepare(
-      'SELECT COUNT(*) as count FROM favourites WHERE id = ?'
+      'SELECT COUNT(*) as count FROM favourites WHERE id = ?',
     );
     const result = stmt.get(id) as { count: number };
     return result.count > 0;

@@ -2,6 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FavouritesService } from '../services/favourites.service';
 import { FavouritesRepository } from '../services/favourites.repository';
 
+let uuidCounter = 0;
+jest.mock('uuid', () => ({
+  v4: jest.fn(() => `mocked-uuid-${++uuidCounter}`),
+}));
+
 describe('FavouritesService', () => {
   let service: FavouritesService;
   let repository: FavouritesRepository;
@@ -111,7 +116,7 @@ describe('FavouritesService', () => {
           breed: addRequest.breed,
           imageUrl: addRequest.imageUrl,
           createdAt: expect.any(Date),
-        })
+        }),
       );
     });
 
@@ -128,7 +133,7 @@ describe('FavouritesService', () => {
     it('should handle different breeds', () => {
       const breeds = ['labrador', 'bulldog', 'poodle', 'german-shepherd'];
 
-      breeds.forEach(breed => {
+      breeds.forEach((breed) => {
         const result = service.addFavourite({
           breed,
           imageUrl: `https://example.com/${breed}.jpg`,
@@ -158,10 +163,10 @@ describe('FavouritesService', () => {
     it('should handle multiple deletions', () => {
       const ids = ['id-1', 'id-2', 'id-3'];
 
-      ids.forEach(id => service.deleteFavourite(id));
+      ids.forEach((id) => service.deleteFavourite(id));
 
       expect(repository.delete).toHaveBeenCalledTimes(3);
-      ids.forEach(id => {
+      ids.forEach((id) => {
         expect(repository.delete).toHaveBeenCalledWith(id);
       });
     });

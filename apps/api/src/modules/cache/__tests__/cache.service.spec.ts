@@ -4,7 +4,6 @@ import { CacheService } from '../services/cache.service';
 
 describe('CacheService', () => {
   let service: CacheService;
-  let configService: ConfigService;
 
   beforeEach(async () => {
     const mockConfigService = {
@@ -19,7 +18,6 @@ describe('CacheService', () => {
     }).compile();
 
     service = module.get<CacheService>(CacheService);
-    configService = module.get<ConfigService>(ConfigService);
   });
 
   afterEach(() => {
@@ -63,7 +61,7 @@ describe('CacheService', () => {
 
     it('should overwrite existing key', () => {
       const key = 'test-key';
-      
+
       service.set(key, 'first-value', 60);
       expect(service.get(key)).toBe('first-value');
 
@@ -128,9 +126,9 @@ describe('CacheService', () => {
     });
 
     it('should handle different TTL values correctly', () => {
-      service.set('short', 'value1', 10);   // 10 seconds
-      service.set('medium', 'value2', 60);  // 60 seconds
-      service.set('long', 'value3', 3600);  // 1 hour
+      service.set('short', 'value1', 10); // 10 seconds
+      service.set('medium', 'value2', 60); // 60 seconds
+      service.set('long', 'value3', 3600); // 1 hour
 
       // After 15 seconds
       jest.advanceTimersByTime(15 * 1000);
@@ -221,10 +219,10 @@ describe('CacheService', () => {
 
       module.then((mod) => {
         const disabledService = mod.get<CacheService>(CacheService);
-        
+
         disabledService.set('key', 'value', 60);
         const result = disabledService.get('key');
-        
+
         expect(result).toBeNull();
       });
     });
