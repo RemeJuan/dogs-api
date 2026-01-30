@@ -12,12 +12,15 @@ describe('FavouritesService', () => {
   let repository: FavouritesRepository;
 
   const mockRepository = {
-    findAll: jest.fn(),
+    findAllByUser: jest.fn(),
     create: jest.fn(),
-    delete: jest.fn(),
-    exists: jest.fn(),
+    deleteByUserAndId: jest.fn(),
+    existsByUserAndId: jest.fn(),
+    existsByUserBreedAndImage: jest.fn(),
     deleteAll: jest.fn(),
   };
+
+  const testUserId = 1;
 
   const mockFavourite = {
     id: 'test-id-123',
@@ -47,7 +50,7 @@ describe('FavouritesService', () => {
   });
 
   describe('getAllFavourites', () => {
-    it('should return all favourites from repository', () => {
+    it('should return all favourites for user from repository', () => {
       const mockFavourites = [
         mockFavourite,
         {
@@ -58,18 +61,18 @@ describe('FavouritesService', () => {
         },
       ];
 
-      mockRepository.findAll.mockReturnValue(mockFavourites);
+      mockRepository.findAllByUser.mockReturnValue(mockFavourites);
 
-      const result = service.getAllFavourites();
+      const result = service.getAllFavourites(testUserId);
 
       expect(result.favourites).toEqual(mockFavourites);
-      expect(repository.findAll).toHaveBeenCalled();
+      expect(repository.findAllByUser).toHaveBeenCalledWith(testUserId);
     });
 
-    it('should return empty array when no favourites exist', () => {
-      mockRepository.findAll.mockReturnValue([]);
+    it('should return empty array when no favourites exist for user', () => {
+      mockRepository.findAllByUser.mockReturnValue([]);
 
-      const result = service.getAllFavourites();
+      const result = service.getAllFavourites(testUserId);
 
       expect(result.favourites).toEqual([]);
       expect(result.favourites).toHaveLength(0);
@@ -83,9 +86,9 @@ describe('FavouritesService', () => {
         createdAt: new Date(),
       }));
 
-      mockRepository.findAll.mockReturnValue(largeFavouritesList);
+      mockRepository.findAllByUser.mockReturnValue(largeFavouritesList);
 
-      const result = service.getAllFavourites();
+      const result = service.getAllFavourites(testUserId);
 
       expect(result.favourites).toHaveLength(100);
     });
@@ -97,8 +100,12 @@ describe('FavouritesService', () => {
       imageUrl: 'https://images.dog.ceo/breeds/poodle/1.jpg',
     };
 
-    it('should create a new favourite', () => {
-      const result = service.addFavourite(addRequest);
+    beforeEach(() => {
+      mockRepository.existsByUserBreedAndImage.mockReturnValue(false);
+    });
+
+    it('should create a new favourite for user', () => {
+      const result = service.addFavourite(testUserId, addRequest);
 
       expect(result.favourite).toBeDefined();
       expect(result.favourite.id).toBeDefined();
@@ -107,10 +114,29 @@ describe('FavouritesService', () => {
       expect(result.favourite.createdAt).toBeInstanceOf(Date);
     });
 
+    it('should check for duplicate before creating', () => {
+      service.addFavourite(testUserId, addRequest);
+
+      expect(repository.existsByUserBreedAndImage).toHaveBeenCalledWith(
+        testUserId,
+        addRequest.breed,
+        addRequest.imageUrl,
+      );
+    });
+
+    it('should throw ConflictException if favourite already exists', () => {
+      mockRepository.existsByUserBreedAndImage.mockReturnValue(true);
+
+      expect(() => service.addFavourite(testUserId, addRequest)).toThrow(
+        'This image is already in your favourites',
+      );
+    });
+
     it('should call repository.create with correct data', () => {
-      service.addFavourite(addRequest);
+      service.addFavourite(testUserId, addRequest);
 
       expect(repository.create).toHaveBeenCalledWith(
+        testUserId,
         expect.objectContaining({
           id: expect.any(String),
           breed: addRequest.breed,
@@ -121,9 +147,15 @@ describe('FavouritesService', () => {
     });
 
     it('should generate unique IDs for multiple favourites', () => {
-      const result1 = service.addFavourite(addRequest);
-      const result2 = service.addFavourite(addRequest);
-      const result3 = service.addFavourite(addRequest);
+      const result1 = service.addFavourite(testUserId, addRequest);
+      const result2 = service.addFavourite(testUserId, {
+        ...addRequest,
+        imageUrl: 'https://example.com/2.jpg',
+      });
+      const result3 = service.addFavourite(testUserId, {
+        ...addRequest,
+        imageUrl: 'https://example.com/3.jpg',
+      });
 
       expect(result1.favourite.id).not.toBe(result2.favourite.id);
       expect(result2.favourite.id).not.toBe(result3.favourite.id);
@@ -134,7 +166,7 @@ describe('FavouritesService', () => {
       const breeds = ['labrador', 'bulldog', 'poodle', 'german-shepherd'];
 
       breeds.forEach((breed) => {
-        const result = service.addFavourite({
+        const result = service.addFavourite(testUserId, {
           breed,
           imageUrl: `https://example.com/${breed}.jpg`,
         });
@@ -147,27 +179,35 @@ describe('FavouritesService', () => {
   });
 
   describe('deleteFavourite', () => {
-    it('should delete favourite by id', () => {
+    it('should delete favourite by userId and id', () => {
       const id = 'test-id-123';
+      mockRepository.deleteByUserAndId.mockReturnValue(true);
 
-      service.deleteFavourite(id);
+      service.deleteFavourite(testUserId, id);
 
-      expect(repository.delete).toHaveBeenCalledWith(id);
+      expect(repository.deleteByUserAndId).toHaveBeenCalledWith(testUserId, id);
     });
 
-    it('should handle deletion of non-existent favourite', () => {
-      expect(() => service.deleteFavourite('non-existent-id')).not.toThrow();
-      expect(repository.delete).toHaveBeenCalledWith('non-existent-id');
+    it('should throw NotFoundException when favourite not found', () => {
+      mockRepository.deleteByUserAndId.mockReturnValue(false);
+
+      expect(() =>
+        service.deleteFavourite(testUserId, 'non-existent-id'),
+      ).toThrow('Favourite not found');
     });
 
     it('should handle multiple deletions', () => {
       const ids = ['id-1', 'id-2', 'id-3'];
+      mockRepository.deleteByUserAndId.mockReturnValue(true);
 
-      ids.forEach((id) => service.deleteFavourite(id));
+      ids.forEach((id) => service.deleteFavourite(testUserId, id));
 
-      expect(repository.delete).toHaveBeenCalledTimes(3);
+      expect(repository.deleteByUserAndId).toHaveBeenCalledTimes(3);
       ids.forEach((id) => {
-        expect(repository.delete).toHaveBeenCalledWith(id);
+        expect(repository.deleteByUserAndId).toHaveBeenCalledWith(
+          testUserId,
+          id,
+        );
       });
     });
   });
