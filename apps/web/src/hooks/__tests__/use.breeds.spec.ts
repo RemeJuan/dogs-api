@@ -1,21 +1,7 @@
 import * as React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { SWRConfig } from 'swr';
+import { Wrapper } from './test-utils';
 import { useBreeds } from '../use.breeds';
-
-function Wrapper({ children }: { children?: React.ReactNode }) {
-  return React.createElement(
-    SWRConfig,
-    {
-      value: {
-        provider: () => new Map(),
-        fetcher: (key: string) =>
-          (fetch(key) as Promise<any>).then((r) => r.json()),
-      },
-    },
-    children,
-  );
-}
 
 function TestComponent() {
   const { dogs, isLoading, error } = useBreeds();
