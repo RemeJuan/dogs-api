@@ -56,19 +56,19 @@ describe('AuthRepository', () => {
   });
 
   describe('saveSession and getSession', () => {
-    it('should save and retrieve a session', () => {
+    it('should save and retrieve a session by userId', () => {
       const accessToken = 'test-access-token';
       const refreshToken = 'test-refresh-token';
 
       repository.saveSession(accessToken, refreshToken, mockUserData);
 
-      const result = repository.getSession(accessToken);
+      const result = repository.getSession(mockUserData.id);
 
       expect(result).toEqual(mockUserData);
     });
 
-    it('should return null for non-existent session', () => {
-      const result = repository.getSession('non-existent-token');
+    it('should return null for non-existent userId', () => {
+      const result = repository.getSession(999);
       expect(result).toBeNull();
     });
 
@@ -76,7 +76,7 @@ describe('AuthRepository', () => {
       const accessToken = 'test-token';
       repository.saveSession(accessToken, 'refresh', mockUserData);
 
-      const session = repository.getSession(accessToken);
+      const session = repository.getSession(mockUserData.id);
       expect(session).not.toBeNull();
     });
 
@@ -84,19 +84,20 @@ describe('AuthRepository', () => {
       const accessToken = 'test-token';
       repository.saveSession(accessToken, 'refresh', mockUserData, 120);
 
-      const session = repository.getSession(accessToken);
+      const session = repository.getSession(mockUserData.id);
       expect(session).not.toBeNull();
     });
 
-    it('should replace existing session with same accessToken', () => {
-      const accessToken = 'same-token';
+    it('should replace existing session for same userId', () => {
+      const accessToken1 = 'token-1';
+      const accessToken2 = 'token-2';
       const userData1 = { ...mockUserData, username: 'user1' };
       const userData2 = { ...mockUserData, username: 'user2' };
 
-      repository.saveSession(accessToken, 'refresh1', userData1);
-      repository.saveSession(accessToken, 'refresh2', userData2);
+      repository.saveSession(accessToken1, 'refresh1', userData1);
+      repository.saveSession(accessToken2, 'refresh2', userData2);
 
-      const result = repository.getSession(accessToken);
+      const result = repository.getSession(mockUserData.id);
       expect(result?.username).toBe('user2');
     });
 
@@ -109,8 +110,8 @@ describe('AuthRepository', () => {
       repository.saveSession(token1, 'refresh1', user1);
       repository.saveSession(token2, 'refresh2', user2);
 
-      expect(repository.getSession(token1)?.username).toBe('user1');
-      expect(repository.getSession(token2)?.username).toBe('user2');
+      expect(repository.getSession(user1.id)?.username).toBe('user1');
+      expect(repository.getSession(user2.id)?.username).toBe('user2');
     });
   });
 
@@ -121,7 +122,7 @@ describe('AuthRepository', () => {
       // Save with 60 minute TTL
       repository.saveSession(accessToken, 'refresh', mockUserData, 60);
 
-      const result = repository.getSession(accessToken);
+      const result = repository.getSession(mockUserData.id);
       expect(result).not.toBeNull();
       expect(result).toEqual(mockUserData);
     });
@@ -131,7 +132,7 @@ describe('AuthRepository', () => {
 
       repository.saveSession(token, 'refresh', mockUserData, 60);
 
-      expect(repository.getSession(token)).not.toBeNull();
+      expect(repository.getSession(mockUserData.id)).not.toBeNull();
     });
   });
 
@@ -140,10 +141,10 @@ describe('AuthRepository', () => {
       const accessToken = 'test-token';
 
       repository.saveSession(accessToken, 'refresh', mockUserData);
-      expect(repository.getSession(accessToken)).not.toBeNull();
+      expect(repository.getSession(mockUserData.id)).not.toBeNull();
 
       repository.deleteSession(mockUserData.id);
-      expect(repository.getSession(accessToken)).toBeNull();
+      expect(repository.getSession(mockUserData.id)).toBeNull();
     });
 
     it('should not throw error when deleting non-existent session', () => {
@@ -151,23 +152,17 @@ describe('AuthRepository', () => {
     });
   });
 
-  describe('sessionExists', () => {
-    it('should return true for existing non-expired session', () => {
+  describe('getSession with userId', () => {
+    it('should retrieve session by userId', () => {
       const accessToken = 'test-token';
       repository.saveSession(accessToken, 'refresh', mockUserData);
 
-      expect(repository.sessionExists(accessToken)).toBe(true);
+      expect(repository.getSession(mockUserData.id)).not.toBeNull();
+      expect(repository.getSession(mockUserData.id)).toEqual(mockUserData);
     });
 
-    it('should return false for non-existent session', () => {
-      expect(repository.sessionExists('non-existent')).toBe(false);
-    });
-
-    it('should return true for valid session', () => {
-      const accessToken = 'valid-token';
-      repository.saveSession(accessToken, 'refresh', mockUserData, 60);
-
-      expect(repository.sessionExists(accessToken)).toBe(true);
+    it('should return null for non-existent userId', () => {
+      expect(repository.getSession(999)).toBeNull();
     });
   });
 
@@ -177,14 +172,14 @@ describe('AuthRepository', () => {
 
       expect(() => repository.cleanupExpiredTokens()).not.toThrow();
 
-      expect(repository.sessionExists('token1')).toBe(true);
+      expect(repository.getSession(mockUserData.id)).not.toBeNull();
     });
 
     it('should handle cleanup when no expired tokens exist', () => {
       repository.saveSession('token', 'refresh', mockUserData, 60);
 
       expect(() => repository.cleanupExpiredTokens()).not.toThrow();
-      expect(repository.sessionExists('token')).toBe(true);
+      expect(repository.getSession(mockUserData.id)).not.toBeNull();
     });
 
     it('should handle cleanup on empty table', () => {
@@ -202,14 +197,14 @@ describe('AuthRepository', () => {
       repository.saveSession('token2', 'refresh2', user2);
       repository.saveSession('token3', 'refresh3', user3);
 
-      expect(repository.sessionExists('token1')).toBe(true);
-      expect(repository.sessionExists('token2')).toBe(true);
+      expect(repository.getSession(user1.id)).not.toBeNull();
+      expect(repository.getSession(user2.id)).not.toBeNull();
 
       repository.deleteAllSessions();
 
-      expect(repository.sessionExists('token1')).toBe(false);
-      expect(repository.sessionExists('token2')).toBe(false);
-      expect(repository.sessionExists('token3')).toBe(false);
+      expect(repository.getSession(user1.id)).toBeNull();
+      expect(repository.getSession(user2.id)).toBeNull();
+      expect(repository.getSession(user3.id)).toBeNull();
     });
 
     it('should handle delete all on empty table', () => {
@@ -228,14 +223,14 @@ describe('AuthRepository', () => {
 
       repository.saveSession('token', 'refresh', complexUser);
 
-      const result = repository.getSession('token');
+      const result = repository.getSession(complexUser.id);
       expect(result).toEqual(complexUser);
     });
 
     it('should maintain data types after storage', () => {
       repository.saveSession('token', 'refresh', mockUserData);
 
-      const result = repository.getSession('token');
+      const result = repository.getSession(mockUserData.id);
       expect(typeof result?.id).toBe('number');
       expect(typeof result?.username).toBe('string');
     });
