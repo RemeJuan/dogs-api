@@ -3,9 +3,10 @@ import * as ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { CssVarsProvider } from '@mui/joy/styles';
 import CssBaseline from '@mui/joy/CssBaseline';
-import { theme } from './theme/theme';
+import { theme } from '@web/theme/theme';
 
-import App from './app/app';
+import App from '@web/app/app';
+import { SWRProvider } from '@web/network/swr.client';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
@@ -15,7 +16,9 @@ root.render(
     <CssVarsProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <App />
+        <SWRProvider>
+          <App />
+        </SWRProvider>
       </BrowserRouter>
     </CssVarsProvider>
   </StrictMode>,
