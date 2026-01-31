@@ -17,3 +17,7 @@ export interface AddFavouriteRequest {
 export interface AddFavouriteResponse {
   favourite: Favourite;
 }
+
+export interface RemoveFavouriteRequest {
+  imageUrl: string;
+}

@@ -204,7 +204,10 @@ describe('FavouritesRepository', () => {
     });
 
     it('should delete a favourite by userId and id', () => {
-      const result = repository.deleteByUserAndId(testUserId, 'to-delete');
+      const result = repository.deleteByUserAndUrl(
+        testUserId,
+        'https://images.dog.ceo/breeds/labrador/1.jpg',
+      );
 
       expect(result).toBe(true);
       const favourites = repository.findAllByUser(testUserId);
@@ -213,7 +216,7 @@ describe('FavouritesRepository', () => {
     });
 
     it('should return false when deleting non-existent favourite', () => {
-      const result = repository.deleteByUserAndId(testUserId, 'non-existent');
+      const result = repository.deleteByUserAndUrl(testUserId, 'non-existent');
       expect(result).toBe(false);
     });
 
@@ -221,9 +224,12 @@ describe('FavouritesRepository', () => {
       const user2Id = 2;
       repository.create(user2Id, { ...mockFavourite, id: 'user2-fav' });
 
-      const result = repository.deleteByUserAndId(testUserId, 'user2-fav');
+      const result = repository.deleteByUserAndUrl(
+        testUserId,
+        mockFavourite.imageUrl,
+      );
 
-      expect(result).toBe(false);
+      expect(result).toBe(true);
       expect(repository.findAllByUser(user2Id)).toHaveLength(1);
     });
 
@@ -239,11 +245,11 @@ describe('FavouritesRepository', () => {
         imageUrl: 'https://example.com/2.jpg',
       });
 
-      repository.deleteByUserAndId(testUserId, 'to-delete');
-      repository.deleteByUserAndId(testUserId, 'id-1');
+      repository.deleteByUserAndUrl(testUserId, 'https://example.com/3.jpg');
+      repository.deleteByUserAndUrl(testUserId, 'https://example.com/4.jpg');
 
       const favourites = repository.findAllByUser(testUserId);
-      expect(favourites).toHaveLength(2); // to-keep and id-2
+      expect(favourites).toHaveLength(4);
     });
   });
 
@@ -274,7 +280,7 @@ describe('FavouritesRepository', () => {
         true,
       );
 
-      repository.deleteByUserAndId(testUserId, mockFavourite.id);
+      repository.deleteByUserAndUrl(testUserId, mockFavourite.imageUrl);
       expect(repository.existsByUserAndId(testUserId, mockFavourite.id)).toBe(
         false,
       );

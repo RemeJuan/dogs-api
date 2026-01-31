@@ -47,8 +47,8 @@ export class FavouritesService {
     return { favourite };
   }
 
-  deleteFavourite(userId: number, id: string): void {
-    const deleted = this.repository.deleteByUserAndId(userId, id);
+  deleteFavourite(userId: number, imageUrl: string): void {
+    const deleted = this.repository.deleteByUserAndUrl(userId, imageUrl);
 
     if (!deleted) {
       throw new NotFoundException('Favourite not found');

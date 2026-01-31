@@ -14,7 +14,7 @@ describe('FavouritesService', () => {
   const mockRepository = {
     findAllByUser: jest.fn(),
     create: jest.fn(),
-    deleteByUserAndId: jest.fn(),
+    deleteByUserAndUrl: jest.fn(),
     existsByUserAndId: jest.fn(),
     existsByUserBreedAndImage: jest.fn(),
     deleteAll: jest.fn(),
@@ -180,16 +180,19 @@ describe('FavouritesService', () => {
 
   describe('deleteFavourite', () => {
     it('should delete favourite by userId and id', () => {
-      const id = 'test-id-123';
-      mockRepository.deleteByUserAndId.mockReturnValue(true);
+      const url = 'test-id-123';
+      mockRepository.deleteByUserAndUrl.mockReturnValue(true);
 
-      service.deleteFavourite(testUserId, id);
+      service.deleteFavourite(testUserId, url);
 
-      expect(repository.deleteByUserAndId).toHaveBeenCalledWith(testUserId, id);
+      expect(repository.deleteByUserAndUrl).toHaveBeenCalledWith(
+        testUserId,
+        url,
+      );
     });
 
     it('should throw NotFoundException when favourite not found', () => {
-      mockRepository.deleteByUserAndId.mockReturnValue(false);
+      mockRepository.deleteByUserAndUrl.mockReturnValue(false);
 
       expect(() =>
         service.deleteFavourite(testUserId, 'non-existent-id'),
@@ -198,13 +201,13 @@ describe('FavouritesService', () => {
 
     it('should handle multiple deletions', () => {
       const ids = ['id-1', 'id-2', 'id-3'];
-      mockRepository.deleteByUserAndId.mockReturnValue(true);
+      mockRepository.deleteByUserAndUrl.mockReturnValue(true);
 
       ids.forEach((id) => service.deleteFavourite(testUserId, id));
 
-      expect(repository.deleteByUserAndId).toHaveBeenCalledTimes(3);
+      expect(repository.deleteByUserAndUrl).toHaveBeenCalledTimes(3);
       ids.forEach((id) => {
-        expect(repository.deleteByUserAndId).toHaveBeenCalledWith(
+        expect(repository.deleteByUserAndUrl).toHaveBeenCalledWith(
           testUserId,
           id,
         );

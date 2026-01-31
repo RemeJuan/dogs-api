@@ -63,15 +63,15 @@ export class FavouritesRepository implements OnModuleInit {
     );
   }
 
-  deleteByUserAndId(userId: number, id: string): boolean {
+  deleteByUserAndUrl(userId: number, imageUrl: string): boolean {
     const stmt = this.databaseService.prepare(
-      'DELETE FROM favourites WHERE userId = ? AND id = ?',
+      'DELETE FROM favourites WHERE userId = ? AND imageUrl = ?',
     );
-    const result = stmt.run(userId, id);
+    const result = stmt.run(userId, imageUrl);
 
     if (result.changes === 0) {
       this.logger.warn(
-        `Attempted to delete non-existent favourite for user ${userId}: ${id}`,
+        `Attempted to delete non-existent favourite for user ${userId}: ${imageUrl}`,
       );
       return false;
     }

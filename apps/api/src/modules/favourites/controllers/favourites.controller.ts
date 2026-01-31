@@ -22,6 +22,7 @@ import {
   AddFavouriteDto,
   AddFavouriteResponseDto,
   FavouritesListDto,
+  RemoveFavouriteDto,
 } from '../dtos/favourite.dto';
 
 @ApiTags('favourites')
@@ -97,7 +98,7 @@ export class FavouritesController {
     return this.favouritesService.addFavourite(userId, request);
   }
 
-  @Delete(':id')
+  @Delete()
   @ApiOperation({
     summary: 'Delete a favourite',
     description: 'Removes a favourite by ID for the authenticated user',
@@ -121,9 +122,9 @@ export class FavouritesController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   deleteFavourite(
     @Headers('authorization') authorization: string,
-    @Param('id') id: string,
+    @Body() request: RemoveFavouriteDto,
   ): void {
     const userId = extractUserIdFromToken(authorization, this.jwtService);
-    this.favouritesService.deleteFavourite(userId, id);
+    this.favouritesService.deleteFavourite(userId, request.imageUrl);
   }
 }

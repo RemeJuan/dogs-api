@@ -5,6 +5,7 @@ import {
   AddFavouriteRequest,
   AddFavouriteResponse,
   FavouritesResponse,
+  RemoveFavouriteRequest,
 } from '@dogs-api/shared-interfaces';
 
 export class FavouriteDto implements Favourite {
@@ -53,4 +54,14 @@ export class AddFavouriteResponseDto implements AddFavouriteResponse {
 export class FavouritesListDto implements FavouritesResponse {
   @ApiProperty({ description: 'List of all favourites', type: [FavouriteDto] })
   favourites: FavouriteDto[];
+}
+
+export class RemoveFavouriteDto implements RemoveFavouriteRequest {
+  @ApiProperty({
+    description: 'Image URL of the favourite to remove',
+    example: 'https://images.dog.ceo/breeds/labrador/1.jpg',
+  })
+  @IsUrl()
+  @IsNotEmpty()
+  imageUrl: string;
 }
