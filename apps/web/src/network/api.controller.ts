@@ -17,12 +17,18 @@ export class ApiController {
 
     const res = await fetch(this.buildUrl(path), { ...opts, headers });
 
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+
     if (!res.ok) {
       const e = await res.json();
       throw new Error(e.message);
     }
 
     if (res.status === 204) return null as unknown as T;
+
+    if (!contentType.includes('application/json')) {
+      return null as unknown as T;
+    }
 
     return (await res.json()) as T;
   }
