@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { Wrapper } from './test-utils';
+import { Wrapper } from '@web/utils/test-utils';
 import { useImages } from '../use.images';
 
 const { act } = React;

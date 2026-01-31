@@ -18,8 +18,8 @@ export class ApiController {
     const res = await fetch(this.buildUrl(path), { ...opts, headers });
 
     if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      throw new Error(`${res.status} ${res.statusText} ${text}`);
+      const e = await res.json();
+      throw new Error(e.message);
     }
 
     if (res.status === 204) return null as unknown as T;

@@ -7,6 +7,7 @@ import { theme } from '@web/theme/theme';
 
 import App from '@web/app/app';
 import { SWRProvider } from '@web/network/swr.client';
+import { AuthProvider } from '@web/context/auth.context';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
@@ -17,7 +18,9 @@ root.render(
       <CssBaseline />
       <BrowserRouter>
         <SWRProvider>
-          <App />
+          <AuthProvider>
+            <App />
+          </AuthProvider>
         </SWRProvider>
       </BrowserRouter>
     </CssVarsProvider>

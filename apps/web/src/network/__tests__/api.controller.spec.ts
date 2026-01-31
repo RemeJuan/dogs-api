@@ -51,13 +51,11 @@ describe('ApiController', () => {
       ok: false,
       status: 500,
       statusText: 'Internal Server Error',
-      text: async () => 'error body',
+      json: async () => ({ message: 'error body' }),
     });
 
     const api = new ApiController('https://example.com');
-    await expect(api.get('/fail')).rejects.toThrow(
-      '500 Internal Server Error error body',
-    );
+    await expect(api.get('/fail')).rejects.toThrow('error body');
   });
 
   it('post sends JSON body', async () => {
@@ -129,7 +127,7 @@ describe('ApiController', () => {
     (global as any).fetch = spyFetch;
 
     const c = new ApiController('https://api.test');
-    // call private request via any-cast to exercise header merge
+
     const result = await (c as any).request('/x', {
       method: 'POST',
       headers: { Authorization: 'Bearer token' },
@@ -152,14 +150,14 @@ describe('ApiController', () => {
       ok: false,
       status: 500,
       statusText: 'Server Error',
-      text: async () => {
+      json: async () => {
         throw new Error('boom');
       },
     });
 
     const c = new ApiController('https://x');
 
-    await expect(c.get('/fail')).rejects.toThrow(/500 Server Error/);
+    await expect(c.get('/fail')).rejects.toThrow('boom');
   });
 
   it('throws when fetch itself rejects (network error)', async () => {

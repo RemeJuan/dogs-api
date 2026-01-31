@@ -1,10 +1,8 @@
 import * as React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import { Wrapper } from './test-utils';
+import { render, screen, waitFor, act } from '@testing-library/react';
+import { Wrapper } from '@web/utils/test-utils';
 import { useBreeds } from '../use.breeds';
 import * as swrUtils from '@web/network/utils/swr.utils';
-
-const { act } = React;
 
 function TestComponent() {
   const { dogs, isLoading, error } = useBreeds();

@@ -2,8 +2,13 @@ import { Route, Routes } from 'react-router-dom';
 import { Box, Container, Typography, Sheet } from '@mui/joy';
 import { HomePage } from '@web/pages/home/home.page';
 import PetsIcon from '@mui/icons-material/Pets';
+import { UserAvatarComponent } from '@web/components/user-avatar.component';
+import { LoginComponent } from '@web/components/login/login.component';
+import { useAuthContext } from '@web/context/auth.context';
 
 export function App() {
+  const { isLoginModalOpen, toggleLoginModal } = useAuthContext();
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Sheet
@@ -14,6 +19,7 @@ export function App() {
           px: 3,
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
           gap: 2,
           background: 'linear-gradient(90deg, #0F172A 0%, #132042 100%)',
           borderBottom: '1px solid rgba(43, 178, 255, 0.2)',
@@ -27,6 +33,12 @@ export function App() {
             Dog Breeds Explorer
           </Typography>
         </Box>
+
+        <Box
+          sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+        >
+          <UserAvatarComponent />
+        </Box>
       </Sheet>
 
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4, flex: 1 }}>
@@ -34,6 +46,11 @@ export function App() {
           <Route path="/" element={<HomePage />} />
         </Routes>
       </Container>
+
+      <LoginComponent
+        open={isLoginModalOpen}
+        onClose={() => toggleLoginModal(false)}
+      />
     </Box>
   );
 }
