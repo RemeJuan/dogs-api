@@ -1,16 +1,13 @@
 import * as React from 'react';
-import { SWRConfig } from 'swr';
+import { SWRProvider } from '@web/network/swr.client';
+import { globalSWRCache } from '@web/network/utils/swr.utils';
 
 export function Wrapper({ children }: { children?: React.ReactNode }) {
-  return React.createElement(
-    SWRConfig,
-    {
-      value: {
-        provider: () => new Map(),
-        fetcher: (key: string) =>
-          (fetch(key) as Promise<any>).then((r) => r.json()),
-      },
-    },
-    children,
-  );
+  try {
+    (globalSWRCache as Map<string, unknown>).clear();
+  } catch (e) {
+    // ignore
+  }
+
+  return React.createElement(SWRProvider, null, children);
 }
