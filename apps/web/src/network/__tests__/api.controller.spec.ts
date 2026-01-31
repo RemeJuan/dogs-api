@@ -82,20 +82,32 @@ describe('ApiController', () => {
     expect(res).toEqual({ id: 1 });
   });
 
-  it('delete calls fetch with DELETE and returns JSON', async () => {
+  it('delete calls fetch with DELETE and returns JSON (supports body and headers)', async () => {
     const fake = { deleted: true };
-    (global as any).fetch = jest.fn().mockResolvedValue({
+    const spy = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => fake,
     });
+    (global as any).fetch = spy;
 
     const c = new ApiController('https://example.com');
-    const res = await c.delete('/item/1');
+    const res = await c.delete(
+      '/item/1',
+      { force: true },
+      { headers: { Authorization: 'Bearer x' } },
+    );
 
-    expect((global as any).fetch).toHaveBeenCalledWith(
+    expect(spy).toHaveBeenCalledWith(
       'https://example.com/item/1',
-      expect.objectContaining({ method: 'DELETE' }),
+      expect.objectContaining({
+        method: 'DELETE',
+        body: JSON.stringify({ force: true }),
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer x',
+        }),
+      }),
     );
 
     expect(res).toEqual(fake);

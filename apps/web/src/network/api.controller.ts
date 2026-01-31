@@ -27,19 +27,24 @@ export class ApiController {
     return (await res.json()) as T;
   }
 
-  get<T>(path: string) {
-    return this.request<T>(path, { method: 'GET' });
+  get<T>(path: string, opts: RequestInit = {}) {
+    return this.request<T>(path, { ...opts, method: 'GET' });
   }
 
-  post<T, B = Json>(path: string, body?: B) {
+  post<T, B = Json>(path: string, body?: B, opts: RequestInit = {}) {
     return this.request<T>(path, {
+      ...opts,
       method: 'POST',
       body: JSON.stringify(body),
     });
   }
 
-  delete<T>(path: string) {
-    return this.request<T>(path, { method: 'DELETE' });
+  delete<T, B = Json>(path: string, body?: B, opts: RequestInit = {}) {
+    return this.request<T>(path, {
+      ...opts,
+      method: 'DELETE',
+      body: JSON.stringify(body),
+    });
   }
 }
 
