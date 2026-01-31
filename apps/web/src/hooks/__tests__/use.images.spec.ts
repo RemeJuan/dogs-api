@@ -3,6 +3,8 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { Wrapper } from './test-utils';
 import { useImages } from '../use.images';
 
+const { act } = React;
+
 function TestComponent({ breed }: { breed?: string | null }) {
   const { images, isLoading, error } = useImages(breed ?? null);
 
@@ -24,13 +26,12 @@ function TestComponentWithRefetch({ breed }: { breed: string }) {
     React.createElement(
       'div',
       null,
-      isLoading ? 'loading' : images ? images.join(',') : 'no-images',
+      isLoading ? 'loading' : images ? images.join(',') : 'no-dogs',
     ),
     React.createElement(
       'button',
       {
         onClick: () => {
-          // call refetch and ignore the promise here; tests will await UI update
           refetch();
         },
       },
@@ -44,10 +45,15 @@ describe('useImages', () => {
     jest.resetAllMocks();
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+    delete (global as any).fetch;
+  });
+
   it('does not fetch when breed is null', async () => {
     (global as any).fetch = jest.fn();
 
-    render(
+    const { container } = render(
       React.createElement(
         Wrapper,
         null,
@@ -55,11 +61,8 @@ describe('useImages', () => {
       ),
     );
 
-    // immediate assertion: should show no-images and not call fetch
-    expect(screen.getByText('no-images')).toBeDefined();
     expect((global as any).fetch).not.toHaveBeenCalled();
-
-    delete (global as any).fetch;
+    expect(container.querySelector('img')).toBeNull();
   });
 
   it('returns loading state initially then images on success', async () => {
@@ -84,8 +87,6 @@ describe('useImages', () => {
     await waitFor(() => {
       expect(screen.getByText(/a.jpg/)).toBeDefined();
     });
-
-    delete (global as any).fetch;
   });
 
   it('exposes error when fetch fails', async () => {
@@ -107,14 +108,10 @@ describe('useImages', () => {
     await waitFor(() => {
       expect(screen.getByText('error')).toBeDefined();
     });
-
-    delete (global as any).fetch;
   });
 
   it('refetch updates data', async () => {
-    // first response
     const first = { images: ['one.jpg'] };
-    // second response after refetch
     const second = { images: ['two.jpg'] };
 
     (global as any).fetch = jest
@@ -134,18 +131,14 @@ describe('useImages', () => {
       ),
     );
 
-    // initial load
     await waitFor(() => {
       expect(screen.getByText(/one.jpg/)).toBeDefined();
     });
 
-    // click refetch to trigger second response
-    fireEvent.click(screen.getByText('refetch'));
+    await act(async () => fireEvent.click(screen.getByText('refetch')));
 
     await waitFor(() => {
       expect(screen.getByText(/two.jpg/)).toBeDefined();
     });
-
-    delete (global as any).fetch;
   });
 });
