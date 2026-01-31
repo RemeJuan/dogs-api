@@ -15,6 +15,7 @@ describe('ApiController', () => {
     (global as any).fetch.mockResolvedValue({
       ok: true,
       status: 200,
+      headers: { get: () => 'application/json' },
       json: async () => ({ hello: 'world' }),
     });
 
@@ -38,6 +39,7 @@ describe('ApiController', () => {
     (global as any).fetch.mockResolvedValue({
       ok: true,
       status: 204,
+      headers: { get: () => 'application/json' },
       json: async () => ({}),
     });
 
@@ -51,6 +53,7 @@ describe('ApiController', () => {
       ok: false,
       status: 500,
       statusText: 'Internal Server Error',
+      headers: { get: () => 'application/json' },
       json: async () => ({ message: 'error body' }),
     });
 
@@ -62,6 +65,7 @@ describe('ApiController', () => {
     (global as any).fetch.mockResolvedValue({
       ok: true,
       status: 201,
+      headers: { get: () => 'application/json' },
       json: async () => ({ id: 1 }),
     });
 
@@ -87,6 +91,7 @@ describe('ApiController', () => {
     const spy = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
+      headers: { get: () => 'application/json' },
       json: async () => fake,
     });
     (global as any).fetch = spy;
@@ -118,6 +123,7 @@ describe('ApiController', () => {
     (global as any).fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
+      headers: { get: () => 'application/json' },
       json: async () => fake,
     });
 
@@ -134,6 +140,7 @@ describe('ApiController', () => {
     const spyFetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
+      headers: { get: () => 'application/json' },
       json: async () => ({ ok: true }),
     });
     (global as any).fetch = spyFetch;
@@ -162,6 +169,7 @@ describe('ApiController', () => {
       ok: false,
       status: 500,
       statusText: 'Server Error',
+      headers: { get: () => 'application/json' },
       json: async () => {
         throw new Error('boom');
       },

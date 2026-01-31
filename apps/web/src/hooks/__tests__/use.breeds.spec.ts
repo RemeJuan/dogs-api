@@ -32,6 +32,7 @@ describe('useBreeds', () => {
     (global as any).fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
+      headers: { get: () => 'application/json' },
       json: async () => fakeResponse,
     });
 
@@ -53,6 +54,7 @@ describe('useBreeds', () => {
       ok: false,
       status: 500,
       statusText: 'Server Error',
+      headers: { get: () => 'text/plain' },
       text: async () => 'bad',
     });
 
@@ -93,6 +95,7 @@ describe('useBreeds', () => {
       return Promise.resolve({
         ok: true,
         status: 200,
+        headers: { get: () => 'application/json' },
         json: async () => (call === 1 ? first : second),
       });
     });
