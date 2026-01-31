@@ -16,7 +16,7 @@ function safeSet(key: string, value: string) {
   try {
     sessionStorage.setItem(key, value);
   } catch (e) {
-    console.error(e.toString());
+    console.error(e);
   }
 }
 
