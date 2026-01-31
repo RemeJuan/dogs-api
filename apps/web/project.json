@@ -9,7 +9,7 @@
     "test": {
       "executor": "@nx/jest:jest",
       "options": {
-        "jestConfig": "apps/web/jest.config.cjs",
+        "jestConfig": "apps/web/jest.config.cts",
         "passWithNoTests": true
       }
     }
