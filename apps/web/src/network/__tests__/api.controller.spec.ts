@@ -1,4 +1,5 @@
 import { ApiController } from '../api.controller';
+import apiDefault from '../api.controller';
 
 describe('ApiController', () => {
   beforeEach(() => {
@@ -81,5 +82,93 @@ describe('ApiController', () => {
     );
 
     expect(res).toEqual({ id: 1 });
+  });
+
+  it('delete calls fetch with DELETE and returns JSON', async () => {
+    const fake = { deleted: true };
+    (global as any).fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => fake,
+    });
+
+    const c = new ApiController('https://example.com');
+    const res = await c.delete('/item/1');
+
+    expect((global as any).fetch).toHaveBeenCalledWith(
+      'https://example.com/item/1',
+      expect.objectContaining({ method: 'DELETE' }),
+    );
+
+    expect(res).toEqual(fake);
+  });
+
+  it("default exported api uses '/api' base", async () => {
+    const fake = { pong: true };
+    (global as any).fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => fake,
+    });
+
+    const res = await apiDefault.get('/ping');
+
+    expect((global as any).fetch).toHaveBeenCalledWith(
+      '/api/ping',
+      expect.any(Object),
+    );
+    expect(res).toEqual(fake);
+  });
+
+  it('merges provided headers with Content-Type when calling request', async () => {
+    const spyFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: true }),
+    });
+    (global as any).fetch = spyFetch;
+
+    const c = new ApiController('https://api.test');
+    // call private request via any-cast to exercise header merge
+    const result = await (c as any).request('/x', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer token' },
+      body: JSON.stringify({ a: 1 }),
+    });
+
+    expect(spyFetch).toHaveBeenCalled();
+    const calledArgs = spyFetch.mock.calls[0];
+    const opts = calledArgs[1] as RequestInit & {
+      headers: Record<string, string>;
+    };
+
+    expect(opts.headers['Content-Type']).toBe('application/json');
+    expect(opts.headers['Authorization']).toBe('Bearer token');
+    expect(result).toEqual({ ok: true });
+  });
+
+  it('throws when response not ok and res.text throws', async () => {
+    (global as any).fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: 'Server Error',
+      text: async () => {
+        throw new Error('boom');
+      },
+    });
+
+    const c = new ApiController('https://x');
+
+    await expect(c.get('/fail')).rejects.toThrow(/500 Server Error/);
+  });
+
+  it('throws when fetch itself rejects (network error)', async () => {
+    (global as any).fetch = jest
+      .fn()
+      .mockRejectedValue(new Error('network boom'));
+
+    const c = new ApiController('https://x');
+
+    await expect(c.get('/net')).rejects.toThrow('network boom');
   });
 });
