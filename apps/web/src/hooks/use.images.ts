@@ -1,19 +1,24 @@
-import useSWR from 'swr';
-import {
-  BreedImagesResponse,
-  BreedListResponse,
-} from '@dogs-api/shared-interfaces';
+import { BreedImagesResponse } from '@dogs-api/shared-interfaces';
+import { useApiSWR } from '@web/network/swr.client';
+import { cacheGet, cacheHasKey } from '@web/network/utils/swr.utils';
 
 export function useImages(breed?: string | null) {
   const key = breed ? `/breeds/${breed}/images` : null;
 
-  const { data, error, isValidating, mutate } =
-    useSWR<BreedImagesResponse>(key);
+  const { data, error, isValidating, mutate } = useApiSWR<BreedImagesResponse>(
+    key,
+    {
+      revalidateOnMount: key ? !cacheHasKey(key) : false,
+      fallbackData: key
+        ? cacheGet<BreedImagesResponse>(key)
+        : ({} as BreedImagesResponse),
+    },
+  );
 
   const isLoading = breed && !error && !data;
 
   return {
-    images: data?.images,
+    images: data?.images ?? [],
     isLoading,
     isValidating,
     error,
