@@ -10,9 +10,13 @@ import {
 } from '@mui/joy';
 import { useAuthContext } from '@web/context/auth.context';
 import { User } from '@dogs-api/shared-interfaces';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export function UserAvatarComponent() {
   const { user, logout, toggleLoginModal } = useAuthContext();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isFavourites = location.pathname === '/favourites';
 
   const getInitials = (user: User) => {
     const { firstName = '', lastName = '' } = user;
@@ -63,6 +67,7 @@ export function UserAvatarComponent() {
                 color: '#ffffff !important',
               },
             }}
+            onClick={() => navigate('/favourites', { replace: isFavourites })}
           >
             Favourites
           </MenuItem>

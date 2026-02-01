@@ -5,9 +5,14 @@ import PetsIcon from '@mui/icons-material/Pets';
 import { UserAvatarComponent } from '@web/components/user-avatar.component';
 import { LoginComponent } from '@web/components/login/login.component';
 import { useAuthContext } from '@web/context/auth.context';
+import { FavouritesPage } from '@web/pages/favourites/favourites.page';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export function App() {
   const { isLoginModalOpen, toggleLoginModal } = useAuthContext();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isHome = location.pathname === '/';
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -26,7 +31,13 @@ export function App() {
         }}
       >
         <Box
-          sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            cursor: 'pointer',
+          }}
+          onClick={() => navigate('/', { replace: isHome })}
         >
           <PetsIcon sx={{ mr: 1.5 }} />
           <Typography level="h4" component="h1">
@@ -44,6 +55,7 @@ export function App() {
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4, flex: 1 }}>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/favourites" element={<FavouritesPage />} />
         </Routes>
       </Container>
 
