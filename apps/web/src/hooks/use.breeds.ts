@@ -20,7 +20,7 @@ export function useBreeds() {
     error,
     refetch: (opts?: { revalidate?: boolean }) =>
       mutate(undefined, opts?.revalidate ?? true) as Promise<
-        BreedListResponse[] | undefined
+        BreedListResponse | undefined
       >,
   };
 }
