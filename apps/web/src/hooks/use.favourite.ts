@@ -5,6 +5,7 @@ import {
   deleteFavourite,
   getFavourites,
 } from '@web/network/favourites.client';
+import { useAuthContext } from '@web/context/auth.context';
 
 type State = {
   favourites: Favourite[];
@@ -13,9 +14,11 @@ type State = {
 };
 
 export function useFavourites() {
+  const { isAuthenticated, toggleLoginModal } = useAuthContext();
+
   const [state, setState] = useState<State>({
     favourites: [],
-    isLoading: true,
+    isLoading: false,
     error: null,
   });
 
@@ -30,6 +33,8 @@ export function useFavourites() {
   }, [state.favourites]);
 
   const refetch = useCallback(async () => {
+    if (!isAuthenticated) return;
+
     setState((s) => ({ ...s, isLoading: true, error: null }));
 
     try {
@@ -45,11 +50,16 @@ export function useFavourites() {
 
       clearError();
     }
-  }, []);
+  }, [isAuthenticated, clearError]);
 
   useEffect(() => {
-    void refetch();
-  }, [refetch]);
+    // Only fetch when user becomes authenticated. If user logs out, clear favourites.
+    if (isAuthenticated) {
+      void refetch();
+    } else {
+      setState({ favourites: [], isLoading: false, error: null });
+    }
+  }, [isAuthenticated, refetch]);
 
   const isFavourite = useCallback(
     (imageUrl: string) => favSet.has(imageUrl),
@@ -58,6 +68,13 @@ export function useFavourites() {
 
   const add = useCallback(
     async (payload: AddFavouriteRequest) => {
+      if (!isAuthenticated) {
+        setState((s) => ({ ...s, error: 'Please log in to add favourites.' }));
+        clearError();
+        toggleLoginModal(true);
+        return;
+      }
+
       const tempId = `temp-${Date.now()}`;
       const tempFavourite: Favourite = {
         id: tempId,
@@ -93,11 +110,21 @@ export function useFavourites() {
         await refetch();
       }
     },
-    [refetch],
+    [isAuthenticated, clearError, toggleLoginModal, refetch],
   );
 
   const remove = useCallback(
     async (imageUrl: string) => {
+      if (!isAuthenticated) {
+        setState((s) => ({
+          ...s,
+          error: 'Please log in to remove favourites.',
+        }));
+        clearError();
+        toggleLoginModal(true);
+        return;
+      }
+
       const prev = state.favourites;
 
       setState((s) => ({
@@ -118,11 +145,21 @@ export function useFavourites() {
         clearError();
       }
     },
-    [state.favourites],
+    [isAuthenticated, state.favourites, clearError, toggleLoginModal],
   );
 
   const toggle = useCallback(
     async (payload: AddFavouriteRequest) => {
+      if (!isAuthenticated) {
+        setState((s) => ({
+          ...s,
+          error: 'Please log in to manage favourites.',
+        }));
+        clearError();
+        toggleLoginModal(true);
+        return;
+      }
+
       if (favSet.has(payload.imageUrl)) {
         const fav = state.favourites.find(
           (f) => f.imageUrl === payload.imageUrl,
@@ -134,7 +171,16 @@ export function useFavourites() {
       }
       return add(payload);
     },
-    [favSet, add, remove, state.favourites, refetch],
+    [
+      favSet,
+      add,
+      remove,
+      state.favourites,
+      refetch,
+      isAuthenticated,
+      clearError,
+      toggleLoginModal,
+    ],
   );
 
   return {

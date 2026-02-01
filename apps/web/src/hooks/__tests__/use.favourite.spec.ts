@@ -1,5 +1,16 @@
 import * as React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
+
+// Ensure the hook sees an authenticated user in tests and provide an AuthProvider
+jest.mock('@web/context/auth.context', () => ({
+  useAuthContext: () => ({
+    isAuthenticated: true,
+    toggleLoginModal: jest.fn(),
+  }),
+  AuthProvider: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children),
+}));
+
 import { Wrapper } from '@web/utils/test-utils';
 import { useFavourites } from '@web/hooks/use.favourite';
 
