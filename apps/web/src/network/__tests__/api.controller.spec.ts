@@ -1,13 +1,14 @@
 import { ApiController } from '../api.controller';
 import apiDefault from '../api.controller';
 
+import type { Mock } from 'vitest';
 describe('ApiController', () => {
   beforeEach(() => {
-    (global as any).fetch = jest.fn();
+    (global as any).fetch = vi.fn();
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
     delete (global as any).fetch;
   });
 
@@ -88,7 +89,7 @@ describe('ApiController', () => {
 
   it('delete calls fetch with DELETE and returns JSON (supports body and headers)', async () => {
     const fake = { deleted: true };
-    const spy = jest.fn().mockResolvedValue({
+    const spy = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       headers: { get: () => 'application/json' },
@@ -120,7 +121,7 @@ describe('ApiController', () => {
 
   it("default exported api uses '/api' base", async () => {
     const fake = { pong: true };
-    (global as any).fetch = jest.fn().mockResolvedValue({
+    (global as any).fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       headers: { get: () => 'application/json' },
@@ -137,7 +138,7 @@ describe('ApiController', () => {
   });
 
   it('merges provided headers with Content-Type when calling request', async () => {
-    const spyFetch = jest.fn().mockResolvedValue({
+    const spyFetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       headers: { get: () => 'application/json' },
@@ -165,7 +166,7 @@ describe('ApiController', () => {
   });
 
   it('throws when response not ok and res.text throws', async () => {
-    (global as any).fetch = jest.fn().mockResolvedValue({
+    (global as any).fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 500,
       statusText: 'Server Error',
@@ -181,7 +182,7 @@ describe('ApiController', () => {
   });
 
   it('throws when fetch itself rejects (network error)', async () => {
-    (global as any).fetch = jest
+    (global as any).fetch = vi
       .fn()
       .mockRejectedValue(new Error('network boom'));
 

@@ -11,7 +11,7 @@ describe('FavouritesRepository', () => {
   const testDbPath = join(process.cwd(), 'data', 'test-favourites.db');
 
   const mockConfigService = {
-    get: jest.fn().mockReturnValue(testDbPath),
+    get: vi.fn().mockReturnValue(testDbPath),
   };
 
   const testUserId = 1;

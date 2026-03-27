@@ -2,12 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BreedsController } from '../controllers/breeds.controller';
 import { BreedsService } from '../services/breeds.service';
 
+import type { Mock } from 'vitest';
 describe('BreedsController', () => {
   let controller: BreedsController;
   let service: BreedsService;
 
   const mockBreedsService = {
-    getAllBreeds: jest.fn(),
+    getAllBreeds: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -23,7 +24,7 @@ describe('BreedsController', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {

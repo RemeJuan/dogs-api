@@ -2,9 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FavouritesService } from '../services/favourites.service';
 import { FavouritesRepository } from '../services/favourites.repository';
 
+import type { Mock } from 'vitest';
 let uuidCounter = 0;
-jest.mock('uuid', () => ({
-  v4: jest.fn(() => `mocked-uuid-${++uuidCounter}`),
+vi.mock('uuid', () => ({
+  v4: vi.fn(() => `mocked-uuid-${++uuidCounter}`),
 }));
 
 describe('FavouritesService', () => {
@@ -12,12 +13,12 @@ describe('FavouritesService', () => {
   let repository: FavouritesRepository;
 
   const mockRepository = {
-    findAllByUser: jest.fn(),
-    create: jest.fn(),
-    deleteByUserAndUrl: jest.fn(),
-    existsByUserAndId: jest.fn(),
-    existsByUserBreedAndImage: jest.fn(),
-    deleteAll: jest.fn(),
+    findAllByUser: vi.fn(),
+    create: vi.fn(),
+    deleteByUserAndUrl: vi.fn(),
+    existsByUserAndId: vi.fn(),
+    existsByUserBreedAndImage: vi.fn(),
+    deleteAll: vi.fn(),
   };
 
   const testUserId = 1;
@@ -42,7 +43,7 @@ describe('FavouritesService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {

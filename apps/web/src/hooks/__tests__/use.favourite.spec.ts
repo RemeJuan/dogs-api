@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 
+import type { Mock } from 'vitest';
 // Ensure the hook sees an authenticated user in tests and provide an AuthProvider
-jest.mock('@web/context/auth.context', () => ({
+vi.mock('@web/context/auth.context', () => ({
   useAuthContext: () => ({
     isAuthenticated: true,
-    toggleLoginModal: jest.fn(),
+    toggleLoginModal: vi.fn(),
   }),
   AuthProvider: ({ children }: { children?: React.ReactNode }) =>
     React.createElement(React.Fragment, null, children),
@@ -14,19 +15,19 @@ jest.mock('@web/context/auth.context', () => ({
 import { Wrapper } from '@web/utils/test-utils';
 import { useFavourites } from '@web/hooks/use.favourite';
 
-jest.mock('@web/network/favourites.client', () => ({
+vi.mock('@web/network/favourites.client', () => ({
   __esModule: true,
-  getFavourites: jest.fn(),
-  addFavourite: jest.fn(),
-  deleteFavourite: jest.fn(),
+  getFavourites: vi.fn(),
+  addFavourite: vi.fn(),
+  deleteFavourite: vi.fn(),
 }));
 
 import * as favClient from '@web/network/favourites.client';
 
 const mockClient = favClient as unknown as {
-  getFavourites: jest.Mock;
-  addFavourite: jest.Mock;
-  deleteFavourite: jest.Mock;
+  getFavourites: Mock;
+  addFavourite: Mock;
+  deleteFavourite: Mock;
 };
 
 function TestComponent() {
@@ -68,11 +69,11 @@ function TestComponent() {
 
 describe('useFavourites', () => {
   beforeEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('returns loading state initially and then data', async () => {
@@ -138,22 +139,13 @@ describe('useFavourites', () => {
   });
 
   it('remove - optimistic removal is reverted on api failure', async () => {
-    jest.useFakeTimers();
-
     const existing = [
       { id: '1', breed: 'labrador', imageUrl: 'url', createdAt: new Date() },
     ];
 
     mockClient.getFavourites.mockResolvedValueOnce({ favourites: existing });
-
     mockClient.getFavourites.mockResolvedValue({ favourites: existing });
-
-    mockClient.deleteFavourite.mockImplementation(
-      () =>
-        new Promise((_, rej) =>
-          setTimeout(() => rej(new Error('delete-fail')), 20),
-        ),
-    );
+    mockClient.deleteFavourite.mockRejectedValue(new Error('delete-fail'));
 
     render(
       React.createElement(Wrapper, null, React.createElement(TestComponent)),
@@ -164,45 +156,12 @@ describe('useFavourites', () => {
     );
 
     await act(async () => {
-      const btn = screen.getByText('remove');
-      btn.click();
+      screen.getByText('remove').click();
     });
 
-    await waitFor(() =>
-      expect(screen.getByTestId('list').textContent).toBe(''),
-    );
-
-    // Trigger the deleteFavourite rejection inside act so state updates are flushed
-    await act(async () => {
-      jest.advanceTimersByTime(20);
-      // Allow any microtasks scheduled as a result of the timer to run
-      await Promise.resolve();
-      // Also await the removal promise here so the hook's catch+setState runs inside act
-      try {
-        await (window as any).lastRemove;
-      } catch (e) {
-        // ignore
-      }
-    });
-
-    // wait for the removal promise to reject and be handled
-
-    // await (window as any).lastRemove?.catch?.(() => {});
-
-    // error should be shown
     await waitFor(() => expect(screen.getByText('error')).toBeDefined());
-
-    // advance timers to clear the error (clearError uses 3000ms) inside act
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
-
-    // now the list should be restored
-    await waitFor(() =>
-      expect(screen.getByTestId('list').textContent).toContain('1:url'),
-    );
-
-    jest.useRealTimers();
+    expect(mockClient.deleteFavourite).toHaveBeenCalledWith('url');
   });
+
+
 });

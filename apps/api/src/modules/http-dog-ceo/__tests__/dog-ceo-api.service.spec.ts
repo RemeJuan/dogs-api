@@ -5,16 +5,17 @@ import { DogCeoApiService } from '../services/dog-ceo-api.service';
 import { of, throwError } from 'rxjs';
 import { AxiosResponse } from 'axios';
 
+import type { Mock } from 'vitest';
 describe('DogCeoApiService', () => {
   let service: DogCeoApiService;
   let httpService: HttpService;
 
   const mockHttpService = {
-    get: jest.fn(),
+    get: vi.fn(),
   };
 
   const mockConfigService = {
-    get: jest.fn().mockReturnValue('https://dog.ceo/api'),
+    get: vi.fn().mockReturnValue('https://dog.ceo/api'),
   };
 
   beforeEach(async () => {
@@ -31,7 +32,7 @@ describe('DogCeoApiService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -95,7 +96,7 @@ describe('DogCeoApiService', () => {
 
     it('should use configured API URL', async () => {
       const customConfigService = {
-        get: jest.fn().mockReturnValue('https://custom-api.com/api'),
+        get: vi.fn().mockReturnValue('https://custom-api.com/api'),
       };
       
       const module: TestingModule = await Test.createTestingModule({

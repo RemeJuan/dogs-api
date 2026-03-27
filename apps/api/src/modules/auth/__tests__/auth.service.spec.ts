@@ -3,24 +3,25 @@ import { AuthService } from '../services/auth.service';
 import { AuthRepository } from '../services/auth.repository';
 import { DummyJsonAuthService } from '@api/modules/http-dummy-json/services/dummy-json-auth.service';
 
+import type { Mock } from 'vitest';
 describe('AuthService', () => {
   let service: AuthService;
   let repository: AuthRepository;
   let dummyJsonAuthService: DummyJsonAuthService;
 
   const mockRepository = {
-    saveSession: jest.fn(),
-    getSession: jest.fn(),
-    getSessionByRefreshToken: jest.fn(),
-    updateSessionTokens: jest.fn(),
-    deleteSession: jest.fn(),
-    sessionExists: jest.fn(),
+    saveSession: vi.fn(),
+    getSession: vi.fn(),
+    getSessionByRefreshToken: vi.fn(),
+    updateSessionTokens: vi.fn(),
+    deleteSession: vi.fn(),
+    sessionExists: vi.fn(),
   };
 
   const mockDummyJsonAuthService = {
-    login: jest.fn(),
-    getCurrentUser: jest.fn(),
-    refreshToken: jest.fn(),
+    login: vi.fn(),
+    getCurrentUser: vi.fn(),
+    refreshToken: vi.fn(),
   };
 
   const mockLoginResponse = {
@@ -61,7 +62,7 @@ describe('AuthService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {

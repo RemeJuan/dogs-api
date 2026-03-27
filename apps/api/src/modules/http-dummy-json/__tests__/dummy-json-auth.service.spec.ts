@@ -6,17 +6,18 @@ import { DummyJsonAuthService } from '../services/dummy-json-auth.service';
 import { of, throwError } from 'rxjs';
 import { AxiosResponse } from 'axios';
 
+import type { Mock } from 'vitest';
 describe('DummyJsonAuthService', () => {
   let service: DummyJsonAuthService;
   let httpService: HttpService;
 
   const mockHttpService = {
-    get: jest.fn(),
-    post: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
   };
 
   const mockConfigService = {
-    get: jest.fn().mockReturnValue('https://dummyjson.com'),
+    get: vi.fn().mockReturnValue('https://dummyjson.com'),
   };
 
   beforeEach(async () => {
@@ -33,7 +34,7 @@ describe('DummyJsonAuthService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {

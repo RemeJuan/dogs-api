@@ -2,12 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '../services/cache.service';
 
+import type { Mock } from 'vitest';
 describe('CacheService', () => {
   let service: CacheService;
 
   beforeEach(async () => {
     const mockConfigService = {
-      get: jest.fn().mockReturnValue('true'),
+      get: vi.fn().mockReturnValue('true'),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -21,7 +22,7 @@ describe('CacheService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -72,11 +73,11 @@ describe('CacheService', () => {
 
   describe('TTL behavior', () => {
     beforeEach(() => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
     });
 
     afterEach(() => {
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should return value before TTL expires', () => {
@@ -87,7 +88,7 @@ describe('CacheService', () => {
       service.set(key, value, ttl);
 
       // Advance time by 30 seconds (before expiry)
-      jest.advanceTimersByTime(30 * 1000);
+      vi.advanceTimersByTime(30 * 1000);
 
       const result = service.get(key);
       expect(result).toBe(value);
@@ -101,7 +102,7 @@ describe('CacheService', () => {
       service.set(key, value, ttl);
 
       // Advance time by 61 seconds (after expiry)
-      jest.advanceTimersByTime(61 * 1000);
+      vi.advanceTimersByTime(61 * 1000);
 
       const result = service.get(key);
       expect(result).toBeNull();
@@ -115,7 +116,7 @@ describe('CacheService', () => {
       service.set(key, value, ttl);
 
       // Advance time past expiry
-      jest.advanceTimersByTime(61 * 1000);
+      vi.advanceTimersByTime(61 * 1000);
 
       // First get should return null and delete the entry
       service.get(key);
@@ -131,18 +132,18 @@ describe('CacheService', () => {
       service.set('long', 'value3', 3600); // 1 hour
 
       // After 15 seconds
-      jest.advanceTimersByTime(15 * 1000);
+      vi.advanceTimersByTime(15 * 1000);
       expect(service.get('short')).toBeNull();
       expect(service.get('medium')).toBe('value2');
       expect(service.get('long')).toBe('value3');
 
       // After 65 seconds total
-      jest.advanceTimersByTime(50 * 1000);
+      vi.advanceTimersByTime(50 * 1000);
       expect(service.get('medium')).toBeNull();
       expect(service.get('long')).toBe('value3');
 
       // After 3700 seconds total
-      jest.advanceTimersByTime(3640 * 1000);
+      vi.advanceTimersByTime(3640 * 1000);
       expect(service.get('long')).toBeNull();
     });
 
@@ -156,7 +157,7 @@ describe('CacheService', () => {
       expect(service.get(key)).toBe(value);
 
       // After expiry
-      jest.advanceTimersByTime(1001);
+      vi.advanceTimersByTime(1001);
       expect(service.get(key)).toBeNull();
     });
   });
@@ -207,7 +208,7 @@ describe('CacheService', () => {
   describe('cache enabled/disabled', () => {
     it('should not cache when CACHE_ENABLED is false', () => {
       const mockConfigService = {
-        get: jest.fn().mockReturnValue('false'),
+        get: vi.fn().mockReturnValue('false'),
       };
 
       const module = Test.createTestingModule({

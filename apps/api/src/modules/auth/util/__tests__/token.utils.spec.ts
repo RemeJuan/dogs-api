@@ -1,19 +1,20 @@
 import { JwtService } from '@nestjs/jwt';
 import { extractUserIdFromToken } from '../token.utils';
 
+import type { Mock } from 'vitest';
 describe('extractUserIdFromToken', () => {
   let mockJwtService: JwtService;
 
   beforeEach(() => {
     mockJwtService = {
-      decode: jest.fn(),
+      decode: vi.fn(),
     } as any;
   });
 
   describe('successful extraction', () => {
     it('should extract userId from valid token', () => {
       const authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
-      (mockJwtService.decode as jest.Mock).mockReturnValue({
+      (mockJwtService.decode as Mock).mockReturnValue({
         id: 1,
         username: 'test',
       });
@@ -30,7 +31,7 @@ describe('extractUserIdFromToken', () => {
       const userIds = [1, 42, 999, 12345];
 
       userIds.forEach((userId) => {
-        (mockJwtService.decode as jest.Mock).mockReturnValue({ id: userId });
+        (mockJwtService.decode as Mock).mockReturnValue({ id: userId });
 
         const result = extractUserIdFromToken('Bearer token', mockJwtService);
 
@@ -40,7 +41,7 @@ describe('extractUserIdFromToken', () => {
 
     it('should work with long JWT tokens', () => {
       const longToken = 'Bearer ' + 'a'.repeat(500);
-      (mockJwtService.decode as jest.Mock).mockReturnValue({ id: 1 });
+      (mockJwtService.decode as Mock).mockReturnValue({ id: 1 });
 
       const result = extractUserIdFromToken(longToken, mockJwtService);
 
@@ -74,7 +75,7 @@ describe('extractUserIdFromToken', () => {
     });
 
     it('should throw when JWT decode returns null', () => {
-      (mockJwtService.decode as jest.Mock).mockReturnValue(null);
+      (mockJwtService.decode as Mock).mockReturnValue(null);
 
       expect(() =>
         extractUserIdFromToken('Bearer token', mockJwtService),
@@ -82,7 +83,7 @@ describe('extractUserIdFromToken', () => {
     });
 
     it('should throw when JWT decode returns undefined', () => {
-      (mockJwtService.decode as jest.Mock).mockReturnValue(undefined);
+      (mockJwtService.decode as Mock).mockReturnValue(undefined);
 
       expect(() =>
         extractUserIdFromToken('Bearer token', mockJwtService),
@@ -90,7 +91,7 @@ describe('extractUserIdFromToken', () => {
     });
 
     it('should throw when decoded token has no id field', () => {
-      (mockJwtService.decode as jest.Mock).mockReturnValue({
+      (mockJwtService.decode as Mock).mockReturnValue({
         username: 'test',
       });
 
@@ -100,7 +101,7 @@ describe('extractUserIdFromToken', () => {
     });
 
     it('should throw when decoded token has null id', () => {
-      (mockJwtService.decode as jest.Mock).mockReturnValue({ id: null });
+      (mockJwtService.decode as Mock).mockReturnValue({ id: null });
 
       expect(() =>
         extractUserIdFromToken('Bearer token', mockJwtService),
@@ -108,7 +109,7 @@ describe('extractUserIdFromToken', () => {
     });
 
     it('should throw when JWT decode throws error', () => {
-      (mockJwtService.decode as jest.Mock).mockImplementation(() => {
+      (mockJwtService.decode as Mock).mockImplementation(() => {
         throw new Error('Malformed JWT');
       });
 
@@ -120,7 +121,7 @@ describe('extractUserIdFromToken', () => {
 
   describe('edge cases', () => {
     it('should handle token with extra spaces', () => {
-      (mockJwtService.decode as jest.Mock).mockReturnValue({ id: 1 });
+      (mockJwtService.decode as Mock).mockReturnValue({ id: 1 });
 
       const result = extractUserIdFromToken(
         'Bearer  token-with-space',
@@ -131,7 +132,7 @@ describe('extractUserIdFromToken', () => {
     });
 
     it('should handle userId as string in token (but convert to number)', () => {
-      (mockJwtService.decode as jest.Mock).mockReturnValue({ id: '42' });
+      (mockJwtService.decode as Mock).mockReturnValue({ id: '42' });
 
       const result = extractUserIdFromToken('Bearer token', mockJwtService);
 

@@ -35,16 +35,16 @@ describe('swr.utils', () => {
     expect(isPromiseLike(() => {})).toBe(false);
   });
 
-  test('respects existing __SWR_CACHE on globalThis when module is reloaded', () => {
+  test('respects existing __SWR_CACHE on globalThis when module is reloaded', async () => {
     const original = (globalThis as any).__SWR_CACHE;
 
-    jest.resetModules();
+    vi.resetModules();
 
     const preexisting = new Map<string, unknown>();
     preexisting.set('pre', 123);
     (globalThis as any).__SWR_CACHE = preexisting;
 
-    const mod = require('../swr.utils') as typeof import('../swr.utils');
+    const mod = (await import('../swr.utils')) as typeof import('../swr.utils');
 
     try {
       expect(mod.globalSWRCache).toBe(preexisting);
@@ -53,7 +53,7 @@ describe('swr.utils', () => {
     } finally {
       if (original === undefined) delete (globalThis as any).__SWR_CACHE;
       else (globalThis as any).__SWR_CACHE = original;
-      jest.resetModules();
+      vi.resetModules();
     }
   });
 });

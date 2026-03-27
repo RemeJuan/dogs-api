@@ -4,22 +4,23 @@ import { BreedsService } from '../services/breeds.service';
 import { CacheService } from '@api/modules/cache/services/cache.service';
 import { DogCeoApiService } from '@api/modules/http-dog-ceo/services/dog-ceo-api.service';
 
+import type { Mock } from 'vitest';
 describe('BreedsService', () => {
   let service: BreedsService;
   let cacheService: CacheService;
   let dogCeoApiService: DogCeoApiService;
 
   const mockCacheService = {
-    get: jest.fn(),
-    set: jest.fn(),
+    get: vi.fn(),
+    set: vi.fn(),
   };
 
   const mockDogCeoApiService = {
-    getAllBreeds: jest.fn(),
+    getAllBreeds: vi.fn(),
   };
 
   const mockConfigService = {
-    get: jest.fn().mockReturnValue('86400'),
+    get: vi.fn().mockReturnValue('86400'),
   };
 
   beforeEach(async () => {
@@ -38,7 +39,7 @@ describe('BreedsService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {
