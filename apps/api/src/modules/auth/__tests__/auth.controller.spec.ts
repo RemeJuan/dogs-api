@@ -5,7 +5,8 @@ import { AuthController } from '../controllers/auth.controller';
 import { AuthService } from '../services/auth.service';
 import * as tokenUtils from '../util/token.utils';
 
-jest.spyOn(tokenUtils, 'extractUserIdFromToken');
+import type { Mock } from 'vitest';
+vi.spyOn(tokenUtils, 'extractUserIdFromToken');
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -13,13 +14,13 @@ describe('AuthController', () => {
   let jwtService: JwtService;
 
   const mockAuthService = {
-    login: jest.fn(),
-    getCurrentUser: jest.fn(),
-    refreshToken: jest.fn(),
+    login: vi.fn(),
+    getCurrentUser: vi.fn(),
+    refreshToken: vi.fn(),
   };
 
   const mockJwtService = {
-    decode: jest.fn(),
+    decode: vi.fn(),
   };
 
   const mockLoginResponse = {
@@ -59,7 +60,7 @@ describe('AuthController', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -96,7 +97,7 @@ describe('AuthController', () => {
     const validAuthHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
 
     it('should extract userId from token and return user', async () => {
-      (tokenUtils.extractUserIdFromToken as jest.Mock).mockReturnValue(1);
+      (tokenUtils.extractUserIdFromToken as Mock).mockReturnValue(1);
       mockAuthService.getCurrentUser.mockResolvedValue(mockUserData);
 
       const result = await controller.getCurrentUser(validAuthHeader);
@@ -110,7 +111,7 @@ describe('AuthController', () => {
     });
 
     it('should throw when token extraction fails', async () => {
-      (tokenUtils.extractUserIdFromToken as jest.Mock).mockImplementation(
+      (tokenUtils.extractUserIdFromToken as Mock).mockImplementation(
         () => {
           throw new UnauthorizedException('Invalid token');
         },

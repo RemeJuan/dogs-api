@@ -1,19 +1,20 @@
 import api from '@web/network/api.controller';
 import { tokenStorage } from '@web/network/token.storage';
 
-jest.mock('@web/network/api.controller', () => ({
+import type { Mock } from 'vitest';
+vi.mock('@web/network/api.controller', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(),
-    post: jest.fn(),
-    delete: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-jest.mock('@web/network/token.storage', () => ({
+vi.mock('@web/network/token.storage', () => ({
   __esModule: true,
   tokenStorage: {
-    getAccessToken: jest.fn(),
+    getAccessToken: vi.fn(),
   },
 }));
 
@@ -24,18 +25,18 @@ import {
 } from '@web/network/favourites.client';
 
 type ApiMock = {
-  get: jest.Mock;
-  post: jest.Mock;
-  delete: jest.Mock;
+  get: Mock;
+  post: Mock;
+  delete: Mock;
 };
 
 const mockApi = api as unknown as ApiMock;
 const mockTokenStorage = tokenStorage as unknown as {
-  getAccessToken: jest.Mock;
+  getAccessToken: Mock;
 };
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
   mockTokenStorage.getAccessToken.mockReturnValue('mock-token');
 });
 

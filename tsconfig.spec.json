@@ -6,12 +6,16 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "jsx": "react-jsx",
-    "types": ["jest", "node", "@testing-library/jest-dom"],
-    "typeRoots": ["./node_modules/@types"]
+    "types": [
+      "vitest/globals",
+      "node",
+      "@testing-library/jest-dom"
+    ],
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
   },
   "include": [
-    "jest.config.ts",
-    "jest.config.cts",
     "**/*.spec.ts",
     "**/*.spec.tsx",
     "**/*.test.ts",

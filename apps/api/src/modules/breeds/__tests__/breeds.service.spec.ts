@@ -10,16 +10,16 @@ describe('BreedsService', () => {
   let dogCeoApiService: DogCeoApiService;
 
   const mockCacheService = {
-    get: jest.fn(),
-    set: jest.fn(),
+    get: vi.fn(),
+    set: vi.fn(),
   };
 
   const mockDogCeoApiService = {
-    getAllBreeds: jest.fn(),
+    getAllBreeds: vi.fn(),
   };
 
   const mockConfigService = {
-    get: jest.fn().mockReturnValue('86400'),
+    get: vi.fn().mockReturnValue('86400'),
   };
 
   beforeEach(async () => {
@@ -38,7 +38,7 @@ describe('BreedsService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -48,10 +48,7 @@ describe('BreedsService', () => {
   describe('getAllBreeds', () => {
     it('should return cached breeds if available', async () => {
       const cachedBreeds = {
-        breeds: [
-          { name: 'labrador' },
-          { name: 'bulldog' },
-        ],
+        breeds: [{ name: 'labrador' }, { name: 'bulldog' }],
       };
 
       mockCacheService.get.mockReturnValue(cachedBreeds);
@@ -101,7 +98,7 @@ describe('BreedsService', () => {
             { name: 'bulldog' },
           ]),
         }),
-        86400
+        86400,
       );
     });
   });

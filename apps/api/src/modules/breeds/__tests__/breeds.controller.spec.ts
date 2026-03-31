@@ -7,15 +7,13 @@ describe('BreedsController', () => {
   let service: BreedsService;
 
   const mockBreedsService = {
-    getAllBreeds: jest.fn(),
+    getAllBreeds: vi.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [BreedsController],
-      providers: [
-        { provide: BreedsService, useValue: mockBreedsService },
-      ],
+      providers: [{ provide: BreedsService, useValue: mockBreedsService }],
     }).compile();
 
     controller = module.get<BreedsController>(BreedsController);
@@ -23,7 +21,7 @@ describe('BreedsController', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -33,10 +31,7 @@ describe('BreedsController', () => {
   describe('getAllBreeds', () => {
     it('should return a list of breeds', async () => {
       const expectedResult = {
-        breeds: [
-          { name: 'labrador' },
-          { name: 'bulldog' },
-        ],
+        breeds: [{ name: 'labrador' }, { name: 'bulldog' }],
       };
 
       mockBreedsService.getAllBreeds.mockResolvedValue(expectedResult);
@@ -62,7 +57,9 @@ describe('BreedsController', () => {
       const error = new Error('Failed to fetch breeds');
       mockBreedsService.getAllBreeds.mockRejectedValue(error);
 
-      await expect(controller.getAllBreeds()).rejects.toThrow('Failed to fetch breeds');
+      await expect(controller.getAllBreeds()).rejects.toThrow(
+        'Failed to fetch breeds',
+      );
     });
   });
 });

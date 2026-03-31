@@ -42,16 +42,16 @@ function TestComponentWithRefetch({ breed }: { breed: string }) {
 
 describe('useImages', () => {
   beforeEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
     delete (global as any).fetch;
   });
 
   it('does not fetch when breed is null', async () => {
-    (global as any).fetch = jest.fn();
+    (global as any).fetch = vi.fn();
 
     const { container } = render(
       React.createElement(
@@ -68,7 +68,7 @@ describe('useImages', () => {
   it('returns loading state initially then images on success', async () => {
     const fakeResponse = { images: ['a.jpg', 'b.jpg'] };
 
-    (global as any).fetch = jest.fn().mockResolvedValue({
+    (global as any).fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
 
@@ -92,7 +92,7 @@ describe('useImages', () => {
   });
 
   it('exposes error when fetch fails', async () => {
-    (global as any).fetch = jest.fn().mockResolvedValue({
+    (global as any).fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 500,
       statusText: 'Server Error',
@@ -117,7 +117,7 @@ describe('useImages', () => {
     const first = { images: ['one.jpg'] };
     const second = { images: ['two.jpg'] };
 
-    (global as any).fetch = jest
+    (global as any).fetch = vi
       .fn()
       .mockResolvedValueOnce({
         ok: true,

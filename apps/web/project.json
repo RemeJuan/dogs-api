@@ -7,10 +7,9 @@
   "// targets": "to see all targets run: nx show project web --web",
   "targets": {
     "test": {
-      "executor": "@nx/jest:jest",
+      "executor": "nx:run-commands",
       "options": {
-        "jestConfig": "apps/web/jest.config.cts",
-        "passWithNoTests": true
+        "command": "vitest run --config apps/web/vitest.config.ts"
       }
     }
   }

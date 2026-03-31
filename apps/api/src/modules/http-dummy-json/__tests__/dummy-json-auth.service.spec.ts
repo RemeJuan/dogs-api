@@ -11,12 +11,12 @@ describe('DummyJsonAuthService', () => {
   let httpService: HttpService;
 
   const mockHttpService = {
-    get: jest.fn(),
-    post: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
   };
 
   const mockConfigService = {
-    get: jest.fn().mockReturnValue('https://dummyjson.com'),
+    get: vi.fn().mockReturnValue('https://dummyjson.com'),
   };
 
   beforeEach(async () => {
@@ -33,7 +33,7 @@ describe('DummyJsonAuthService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -79,7 +79,7 @@ describe('DummyJsonAuthService', () => {
         expect.objectContaining({
           headers: { 'Content-Type': 'application/json' },
           withCredentials: true,
-        })
+        }),
       );
     });
 
@@ -128,14 +128,14 @@ describe('DummyJsonAuthService', () => {
       expect(httpService.post).toHaveBeenCalledWith(
         'https://dummyjson.com/auth/login',
         requestWithoutExpiry,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
 
   describe('getCurrentUser', () => {
     const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
-    
+
     const mockUserResponse = {
       id: 1,
       username: 'emilys',
@@ -165,7 +165,7 @@ describe('DummyJsonAuthService', () => {
         expect.objectContaining({
           headers: { Authorization: `Bearer ${accessToken}` },
           withCredentials: true,
-        })
+        }),
       );
     });
 
@@ -177,7 +177,9 @@ describe('DummyJsonAuthService', () => {
 
       mockHttpService.get.mockReturnValue(throwError(() => error));
 
-      await expect(service.getCurrentUser(accessToken)).rejects.toThrow(HttpException);
+      await expect(service.getCurrentUser(accessToken)).rejects.toThrow(
+        HttpException,
+      );
       await expect(service.getCurrentUser(accessToken)).rejects.toMatchObject({
         status: HttpStatus.UNAUTHORIZED,
       });
@@ -191,7 +193,9 @@ describe('DummyJsonAuthService', () => {
 
       mockHttpService.get.mockReturnValue(throwError(() => error));
 
-      await expect(service.getCurrentUser(accessToken)).rejects.toThrow(HttpException);
+      await expect(service.getCurrentUser(accessToken)).rejects.toThrow(
+        HttpException,
+      );
       await expect(service.getCurrentUser(accessToken)).rejects.toMatchObject({
         status: HttpStatus.UNAUTHORIZED,
       });
@@ -201,7 +205,9 @@ describe('DummyJsonAuthService', () => {
       const error = new Error('Service down');
       mockHttpService.get.mockReturnValue(throwError(() => error));
 
-      await expect(service.getCurrentUser(accessToken)).rejects.toThrow(HttpException);
+      await expect(service.getCurrentUser(accessToken)).rejects.toThrow(
+        HttpException,
+      );
       await expect(service.getCurrentUser(accessToken)).rejects.toMatchObject({
         status: HttpStatus.SERVICE_UNAVAILABLE,
       });
@@ -239,7 +245,7 @@ describe('DummyJsonAuthService', () => {
         expect.objectContaining({
           headers: { 'Content-Type': 'application/json' },
           withCredentials: true,
-        })
+        }),
       );
     });
 
@@ -259,7 +265,7 @@ describe('DummyJsonAuthService', () => {
       expect(httpService.post).toHaveBeenCalledWith(
         'https://dummyjson.com/auth/refresh',
         {},
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -271,7 +277,9 @@ describe('DummyJsonAuthService', () => {
 
       mockHttpService.post.mockReturnValue(throwError(() => error));
 
-      await expect(service.refreshToken(refreshRequest)).rejects.toThrow(HttpException);
+      await expect(service.refreshToken(refreshRequest)).rejects.toThrow(
+        HttpException,
+      );
       await expect(service.refreshToken(refreshRequest)).rejects.toMatchObject({
         status: HttpStatus.UNAUTHORIZED,
       });
@@ -281,7 +289,9 @@ describe('DummyJsonAuthService', () => {
       const error = new Error('API error');
       mockHttpService.post.mockReturnValue(throwError(() => error));
 
-      await expect(service.refreshToken(refreshRequest)).rejects.toThrow(HttpException);
+      await expect(service.refreshToken(refreshRequest)).rejects.toThrow(
+        HttpException,
+      );
       await expect(service.refreshToken(refreshRequest)).rejects.toMatchObject({
         status: HttpStatus.SERVICE_UNAVAILABLE,
       });
@@ -300,7 +310,8 @@ describe('DummyJsonAuthService', () => {
         ],
       }).compile();
 
-      const customService = module.get<DummyJsonAuthService>(DummyJsonAuthService);
+      const customService =
+        module.get<DummyJsonAuthService>(DummyJsonAuthService);
 
       const mockResponse: Partial<AxiosResponse> = {
         data: {},
@@ -317,7 +328,7 @@ describe('DummyJsonAuthService', () => {
       expect(httpService.post).toHaveBeenCalledWith(
         'https://custom-api.com/auth/login',
         expect.any(Object),
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });

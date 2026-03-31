@@ -7,15 +7,13 @@ describe('ImagesController', () => {
   let service: ImagesService;
 
   const mockImagesService = {
-    getBreedImages: jest.fn(),
+    getBreedImages: vi.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ImagesController],
-      providers: [
-        { provide: ImagesService, useValue: mockImagesService },
-      ],
+      providers: [{ provide: ImagesService, useValue: mockImagesService }],
     }).compile();
 
     controller = module.get<ImagesController>(ImagesController);
@@ -23,7 +21,7 @@ describe('ImagesController', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -119,13 +117,16 @@ describe('ImagesController', () => {
       const error = new Error('Failed to fetch images');
       mockImagesService.getBreedImages.mockRejectedValue(error);
 
-      await expect(controller.getBreedImages('invalid', 3)).rejects.toThrow('Failed to fetch images');
+      await expect(controller.getBreedImages('invalid', 3)).rejects.toThrow(
+        'Failed to fetch images',
+      );
     });
 
     it('should handle large image counts', async () => {
       const largeCount = 50;
-      const mockImages = Array.from({ length: largeCount }, (_, i) => 
-        `https://images.dog.ceo/breeds/husky/${i + 1}.jpg`
+      const mockImages = Array.from(
+        { length: largeCount },
+        (_, i) => `https://images.dog.ceo/breeds/husky/${i + 1}.jpg`,
       );
 
       const expectedResult = {
@@ -143,7 +144,7 @@ describe('ImagesController', () => {
 
     it('should handle concurrent requests for different breeds', async () => {
       const breeds = ['labrador', 'bulldog', 'poodle'];
-      const promises = breeds.map(breed => {
+      const promises = breeds.map((breed) => {
         const expectedResult = {
           breed,
           images: [`https://images.dog.ceo/breeds/${breed}/1.jpg`],

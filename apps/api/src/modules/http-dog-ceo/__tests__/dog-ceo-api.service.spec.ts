@@ -10,11 +10,11 @@ describe('DogCeoApiService', () => {
   let httpService: HttpService;
 
   const mockHttpService = {
-    get: jest.fn(),
+    get: vi.fn(),
   };
 
   const mockConfigService = {
-    get: jest.fn().mockReturnValue('https://dog.ceo/api'),
+    get: vi.fn().mockReturnValue('https://dog.ceo/api'),
   };
 
   beforeEach(async () => {
@@ -31,7 +31,7 @@ describe('DogCeoApiService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -64,7 +64,9 @@ describe('DogCeoApiService', () => {
         bulldog: ['boston', 'english', 'french'],
         labrador: [],
       });
-      expect(httpService.get).toHaveBeenCalledWith('https://dog.ceo/api/breeds/list/all');
+      expect(httpService.get).toHaveBeenCalledWith(
+        'https://dog.ceo/api/breeds/list/all',
+      );
     });
 
     it('should handle empty breed list', async () => {
@@ -90,14 +92,16 @@ describe('DogCeoApiService', () => {
       const error = new Error('Network error');
       mockHttpService.get.mockReturnValue(throwError(() => error));
 
-      await expect(service.getAllBreeds()).rejects.toThrow('Failed to fetch breeds from external API');
+      await expect(service.getAllBreeds()).rejects.toThrow(
+        'Failed to fetch breeds from external API',
+      );
     });
 
     it('should use configured API URL', async () => {
       const customConfigService = {
-        get: jest.fn().mockReturnValue('https://custom-api.com/api'),
+        get: vi.fn().mockReturnValue('https://custom-api.com/api'),
       };
-      
+
       const module: TestingModule = await Test.createTestingModule({
         providers: [
           DogCeoApiService,
@@ -123,7 +127,9 @@ describe('DogCeoApiService', () => {
 
       await customService.getAllBreeds();
 
-      expect(mockHttpService.get).toHaveBeenCalledWith('https://custom-api.com/api/breeds/list/all');
+      expect(mockHttpService.get).toHaveBeenCalledWith(
+        'https://custom-api.com/api/breeds/list/all',
+      );
     });
   });
 
@@ -154,7 +160,7 @@ describe('DogCeoApiService', () => {
         'https://images.dog.ceo/breeds/labrador/3.jpg',
       ]);
       expect(httpService.get).toHaveBeenCalledWith(
-        'https://dog.ceo/api/breed/labrador/images/random/3'
+        'https://dog.ceo/api/breed/labrador/images/random/3',
       );
     });
 
@@ -176,13 +182,14 @@ describe('DogCeoApiService', () => {
 
       expect(result).toEqual(['https://images.dog.ceo/breeds/bulldog/1.jpg']);
       expect(httpService.get).toHaveBeenCalledWith(
-        'https://dog.ceo/api/breed/bulldog/images/random/1'
+        'https://dog.ceo/api/breed/bulldog/images/random/1',
       );
     });
 
     it('should handle large image count', async () => {
-      const mockImages = Array.from({ length: 10 }, (_, i) => 
-        `https://images.dog.ceo/breeds/poodle/${i + 1}.jpg`
+      const mockImages = Array.from(
+        { length: 10 },
+        (_, i) => `https://images.dog.ceo/breeds/poodle/${i + 1}.jpg`,
       );
 
       const mockResponse: Partial<AxiosResponse> = {
@@ -208,12 +215,14 @@ describe('DogCeoApiService', () => {
       const error = new Error('API error');
       mockHttpService.get.mockReturnValue(throwError(() => error));
 
-      await expect(service.getBreedImages('invalid', 3)).rejects.toThrow('Failed to fetch breed images from external API');
+      await expect(service.getBreedImages('invalid', 3)).rejects.toThrow(
+        'Failed to fetch breed images from external API',
+      );
     });
 
     it('should handle different breed names correctly', async () => {
       const breeds = ['labrador', 'bulldog', 'poodle', 'german-shepherd'];
-      
+
       for (const breed of breeds) {
         const mockResponse: Partial<AxiosResponse> = {
           data: {
@@ -231,7 +240,7 @@ describe('DogCeoApiService', () => {
         await service.getBreedImages(breed, 1);
 
         expect(httpService.get).toHaveBeenCalledWith(
-          `https://dog.ceo/api/breed/${breed}/images/random/1`
+          `https://dog.ceo/api/breed/${breed}/images/random/1`,
         );
       }
     });

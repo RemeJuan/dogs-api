@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 
-jest.mock('../api.controller', () => ({
+vi.mock('../api.controller', () => ({
   __esModule: true,
-  default: { get: jest.fn() },
+  default: { get: vi.fn() },
 }));
 
 import React from 'react';
@@ -46,7 +46,7 @@ describe('SWRProvider cleanup', () => {
 
 describe('SWRProvider error handling', () => {
   it('swallows exceptions from global cache entries and still renders children', () => {
-    const spy = jest
+    const spy = vi
       .spyOn(Map.prototype as any, 'entries')
       .mockImplementation(() => {
         throw new Error('boom');
@@ -66,7 +66,7 @@ describe('SWRProvider error handling', () => {
   });
 
   it('useApiSWR with null key does not trigger network fetch', () => {
-    (global as any).fetch = jest.fn();
+    (global as any).fetch = vi.fn();
 
     function NullKeyComponent() {
       const { data, isLoading } = useApiSWR(null);
@@ -94,7 +94,7 @@ describe('SWRProvider error handling', () => {
 
 describe('SWRProvider fetcher', () => {
   it('uses api.get as the fetcher when useApiSWR is used with a key', async () => {
-    (api as any).get = jest.fn().mockResolvedValue({ hello: 'world' });
+    (api as any).get = vi.fn().mockResolvedValue({ hello: 'world' });
 
     function Caller() {
       const { fetcher } = swr.useSWRConfig() as any;

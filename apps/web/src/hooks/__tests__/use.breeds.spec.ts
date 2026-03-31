@@ -18,18 +18,18 @@ function TestComponent() {
 
 describe('useBreeds', () => {
   beforeEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
     delete (global as any).fetch;
   });
 
   it('returns loading state initially and then data', async () => {
     const fakeResponse = { breeds: [{ id: '1', name: 'Labrador' }] };
 
-    (global as any).fetch = jest.fn().mockResolvedValue({
+    (global as any).fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       headers: { get: () => 'application/json' },
@@ -50,7 +50,7 @@ describe('useBreeds', () => {
   });
 
   it('exposes error when fetch fails', async () => {
-    (global as any).fetch = jest.fn().mockResolvedValue({
+    (global as any).fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 500,
       statusText: 'Server Error',
@@ -70,12 +70,12 @@ describe('useBreeds', () => {
   });
 
   it('uses fallbackData from cache and does not revalidate on mount', async () => {
-    jest.spyOn(swrUtils, 'cacheHasKey').mockReturnValue(true);
-    jest
-      .spyOn(swrUtils, 'cacheGet')
-      .mockReturnValue({ breeds: [{ id: 'c1', name: 'Cached' }] });
+    vi.spyOn(swrUtils, 'cacheHasKey').mockReturnValue(true);
+    vi.spyOn(swrUtils, 'cacheGet').mockReturnValue({
+      breeds: [{ id: 'c1', name: 'Cached' }],
+    });
 
-    (global as any).fetch = jest.fn();
+    (global as any).fetch = vi.fn();
 
     render(
       React.createElement(Wrapper, null, React.createElement(TestComponent)),
@@ -90,7 +90,7 @@ describe('useBreeds', () => {
     const second = { breeds: [{ id: '2', name: 'Second' }] };
 
     let call = 0;
-    (global as any).fetch = jest.fn().mockImplementation(() => {
+    (global as any).fetch = vi.fn().mockImplementation(() => {
       call += 1;
       return Promise.resolve({
         ok: true,
@@ -100,8 +100,8 @@ describe('useBreeds', () => {
       });
     });
 
-    jest.spyOn(swrUtils, 'cacheHasKey').mockReturnValue(false);
-    jest.spyOn(swrUtils, 'cacheGet').mockReturnValue(undefined as any);
+    vi.spyOn(swrUtils, 'cacheHasKey').mockReturnValue(false);
+    vi.spyOn(swrUtils, 'cacheGet').mockReturnValue(undefined as any);
 
     function TestRefetch() {
       const { dogs, isLoading, refetch } = useBreeds();

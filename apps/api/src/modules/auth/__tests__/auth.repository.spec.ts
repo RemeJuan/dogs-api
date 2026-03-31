@@ -11,7 +11,7 @@ describe('AuthRepository', () => {
   const testDbPath = join(process.cwd(), 'data', 'test-auth.db');
 
   const mockConfigService = {
-    get: jest.fn().mockReturnValue(testDbPath),
+    get: vi.fn().mockReturnValue(testDbPath),
   };
 
   const mockUserData = {

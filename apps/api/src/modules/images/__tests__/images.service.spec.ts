@@ -10,16 +10,16 @@ describe('ImagesService', () => {
   let dogCeoApiService: DogCeoApiService;
 
   const mockCacheService = {
-    get: jest.fn(),
-    set: jest.fn(),
+    get: vi.fn(),
+    set: vi.fn(),
   };
 
   const mockDogCeoApiService = {
-    getBreedImages: jest.fn(),
+    getBreedImages: vi.fn(),
   };
 
   const mockConfigService = {
-    get: jest.fn().mockReturnValue('60'),
+    get: vi.fn().mockReturnValue('60'),
   };
 
   beforeEach(async () => {
@@ -38,7 +38,7 @@ describe('ImagesService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -61,7 +61,9 @@ describe('ImagesService', () => {
       const result = await service.getBreedImages('labrador', 3);
 
       expect(result).toEqual(cachedImages);
-      expect(cacheService.get).toHaveBeenCalledWith('breed-images:labrador:count:3');
+      expect(cacheService.get).toHaveBeenCalledWith(
+        'breed-images:labrador:count:3',
+      );
       expect(dogCeoApiService.getBreedImages).not.toHaveBeenCalled();
     });
 
@@ -81,7 +83,10 @@ describe('ImagesService', () => {
         breed: 'bulldog',
         images: mockImages,
       });
-      expect(dogCeoApiService.getBreedImages).toHaveBeenCalledWith('bulldog', 3);
+      expect(dogCeoApiService.getBreedImages).toHaveBeenCalledWith(
+        'bulldog',
+        3,
+      );
     });
 
     it('should cache the fetched images', async () => {
@@ -101,7 +106,7 @@ describe('ImagesService', () => {
           breed: 'poodle',
           images: mockImages,
         },
-        60
+        60,
       );
     });
 
@@ -113,7 +118,10 @@ describe('ImagesService', () => {
 
       await service.getBreedImages('labrador');
 
-      expect(dogCeoApiService.getBreedImages).toHaveBeenCalledWith('labrador', 3);
+      expect(dogCeoApiService.getBreedImages).toHaveBeenCalledWith(
+        'labrador',
+        3,
+      );
     });
 
     it('should handle different image counts', async () => {
@@ -122,13 +130,16 @@ describe('ImagesService', () => {
       for (const count of counts) {
         mockCacheService.get.mockReturnValue(null);
         mockDogCeoApiService.getBreedImages.mockResolvedValue(
-          Array.from({ length: count }, (_, i) => `img${i}.jpg`)
+          Array.from({ length: count }, (_, i) => `img${i}.jpg`),
         );
 
         const result = await service.getBreedImages('husky', count);
 
         expect(result.images).toHaveLength(count);
-        expect(dogCeoApiService.getBreedImages).toHaveBeenCalledWith('husky', count);
+        expect(dogCeoApiService.getBreedImages).toHaveBeenCalledWith(
+          'husky',
+          count,
+        );
       }
     });
 
@@ -140,9 +151,15 @@ describe('ImagesService', () => {
       await service.getBreedImages('labrador', 5);
       await service.getBreedImages('bulldog', 3);
 
-      expect(cacheService.get).toHaveBeenCalledWith('breed-images:labrador:count:3');
-      expect(cacheService.get).toHaveBeenCalledWith('breed-images:labrador:count:5');
-      expect(cacheService.get).toHaveBeenCalledWith('breed-images:bulldog:count:3');
+      expect(cacheService.get).toHaveBeenCalledWith(
+        'breed-images:labrador:count:3',
+      );
+      expect(cacheService.get).toHaveBeenCalledWith(
+        'breed-images:labrador:count:5',
+      );
+      expect(cacheService.get).toHaveBeenCalledWith(
+        'breed-images:bulldog:count:3',
+      );
     });
 
     it('should propagate errors from DogCeoApiService', async () => {
@@ -150,7 +167,9 @@ describe('ImagesService', () => {
       mockCacheService.get.mockReturnValue(null);
       mockDogCeoApiService.getBreedImages.mockRejectedValue(error);
 
-      await expect(service.getBreedImages('invalid', 3)).rejects.toThrow('API error');
+      await expect(service.getBreedImages('invalid', 3)).rejects.toThrow(
+        'API error',
+      );
     });
 
     it('should handle empty image arrays', async () => {
@@ -167,7 +186,7 @@ describe('ImagesService', () => {
 
     it('should use TTL from environment configuration', async () => {
       mockConfigService.get.mockReturnValue('120');
-      
+
       const module: TestingModule = await Test.createTestingModule({
         providers: [
           ImagesService,
@@ -187,7 +206,7 @@ describe('ImagesService', () => {
       expect(mockCacheService.set).toHaveBeenCalledWith(
         expect.any(String),
         expect.any(Object),
-        120
+        120,
       );
     });
   });
